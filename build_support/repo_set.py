@@ -416,6 +416,14 @@ class RevisionSpecification:
                 continue
             if project == "apitrace":
                 continue
+            if project == "sixonix":
+                continue
+            if project == "spirvheaders":
+                continue
+            if project == "spirvtools":
+                continue
+            if project == "kc-cts":
+                continue
             revs.append(project + "=" + rev)
         return " ".join(revs)
 
