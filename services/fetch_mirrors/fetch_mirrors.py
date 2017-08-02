@@ -9,8 +9,11 @@ import sys
 import time
 
 import git
-
-sys.path.append("/var/lib/git/mesa_jenkins/services/")
+import socket
+if socket.gethostname() == "otc-mesa-ci":
+    sys.path.append("/var/lib/git/mesa_jenkins/services/")
+elif socket.gethostname() == "otc-mesa-android":
+    sys.path.append("/var/lib/git/mesa_perf/repos/mesa_ci/services/")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), ".."))
 
 sys.path.append("/var/lib/git/mesa_jenkins/")
