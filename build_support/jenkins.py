@@ -170,7 +170,7 @@ class Jenkins:
         self._jobs.append(project_invoke)
 
         # use the current build_support branch on the component builds
-        r = git.Repo(os.getcwd())
+        r = git.Repo(ProjectMap().source_root())
         bs_branch = r.commit().hexsha
         url = "{0}/buildWithParameters?token=noauth&{1}&branch={2}&build_support_branch={3}".format(
             self._job_url,
@@ -422,6 +422,7 @@ class Jenkins:
                 script = proj_build_dir + "/build.py"
                 if not os.path.exists(script):
                     depGraph.build_complete(an_invoke)
+                    builds_in_round += 1
                     continue
 
                 try:
@@ -461,8 +462,8 @@ class Jenkins:
                 depGraph.build_complete(finished.invoke)
 
             elif not builds_in_round:
-                # nothing was built, and there was no failure => the last
-                # project is built
+                # nothing was built, there was no failure, and no
+                # builds are ready => the last project is built
 
                 #stub_test_results(out_test_dir, o.hardware)
                 # CleanServer(o).clean()
