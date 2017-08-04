@@ -368,8 +368,6 @@ class RevisionSpecification:
                 continue
             if project == "gtest":
                 continue
-            if project == "sixonix":
-                continue
             if project == "apitrace":
                 continue
             revs.append(project + "=" + rev)
