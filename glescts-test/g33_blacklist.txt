@@ -1,7 +1,0 @@
-ES3-CTS
-ES31-CTS
-ES32-CTS
-ESEXT-CTS
-ES2-CTS.functional.draw.random
-ES2-CTS.functional.clipping.triangle_vertex.clip_two
-ES2-CTS.gtf.GL2FixedTests.point_sprites.point_sprites

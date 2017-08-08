@@ -1,8 +1,0 @@
-ES32-CTS
-ES31-CTS.functional.synchronization.inter_call.without_memory_barrier.ssbo_atomic_counter_mixed_dispatch_100_calls_1k_invocations
-ES3-CTS.functional.flush_finish
-ES2-CTS.gtf.GL.struct.structnest_bvec2bvec3bvec4_vert
-ES31-CTS.functional.primitive_bounding_box.lines.global_state.vertex_tessellation_fragment.fbo_bbox_larger
-ESEXT-CTS.tessellation_shader.tessellation_shader_tessellation.gl_InvocationID_PatchVerticesIn_PrimitiveID
-ES31-CTS.core.tessellation_shader.tessellation_shader_tessellation.gl_InvocationID_PatchVerticesIn_PrimitiveID
-ES3-CTS.functional.fragment_ops.random.7

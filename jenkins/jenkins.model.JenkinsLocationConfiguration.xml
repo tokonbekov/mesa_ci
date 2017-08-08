@@ -1,5 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<jenkins.model.JenkinsLocationConfiguration>
-  <adminAddress>intel mesa jenkins &lt;do-not-reply@intel.com&gt;</adminAddress>
-  <jenkinsUrl>http://otc-mesa-ci.jf.intel.com/</jenkinsUrl>
-</jenkins.model.JenkinsLocationConfiguration>

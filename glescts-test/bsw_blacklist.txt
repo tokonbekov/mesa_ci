@@ -1,2 +1,0 @@
-ES32-CTS
-ES31-CTS.functional.synchronization.inter_call.without_memory_barrier.ssbo_atomic_counter_mixed_dispatch_100_calls_1k_invocations

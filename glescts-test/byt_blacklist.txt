@@ -1,8 +1,0 @@
-ES32-CTS
-ES31-CTS.functional.stencil_texturing.format.depth24_stencil8_cube
-ES31-CTS.functional.stencil_texturing.format.depth32f_stencil8_cube
-ES31-CTS.functional.texture.border_clamp.formats.stencil_index8.gather_size_pot
-ES31-CTS.functional.texture.border_clamp.formats.stencil_index8.gather_size_npot
-ES31-CTS.functional.synchronization.inter_call.without_memory_barrier.ssbo_atomic_counter_mixed_dispatch_100_calls_1k_invocations
-ESEXT-CTS.tessellation_shader.tessellation_shader_tessellation.gl_InvocationID_PatchVerticesIn_PrimitiveID
-ES31-CTS.core.tessellation_shader.tessellation_shader_tessellation.gl_InvocationID_PatchVerticesIn_PrimitiveID

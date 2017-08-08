@@ -1,1 +1,0 @@
-dEQP-GLES31.functional.debug.negative_coverage.get_error.shader_storage.block_number_limits

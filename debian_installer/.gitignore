@@ -1,7 +1,0 @@
-cd/*
-initrd/*
-work/*
-*.iso
-efi.img
-ia32
-x64
