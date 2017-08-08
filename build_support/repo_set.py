@@ -197,9 +197,15 @@ class RepoSet:
             self._repos_root = repos_root
 
         if self._use_cache:
-            self._git_cache = ("git://" +
-                               ProjectMap().build_spec().find("build_master").attrib["hostname"] +
-                               ".local/git/")
+            if os.name == "nt":
+                self._git_cache = ("git://" +
+                                   ProjectMap().build_spec().find("build_master").attrib["host"] +
+                                   "/git/")
+            else:
+                self._git_cache = ("git://" +
+                                   ProjectMap().build_spec().find("build_master").attrib["hostname"] +
+                                   ".local/git/")
+
         repos = buildspec.find("repos")
         for tag in repos:
             project = tag.tag
