@@ -100,15 +100,18 @@ class Export:
 
         perf_path = ProjectMap().build_root()
         rsync = "rsync"
+        dest = self._dest
         if os.name == "nt":
             perf_path = os.path.relpath(ProjectMap().project_source_dir("sixonix") + "/windows/scores").replace("\\","/")
             rsync = "c:/Program Files (x86)/Git/usr/bin/rsync.exe"
+            # default result path of mesa commit is not used for windows perf results
+            dest = convert_rsync_path("/mnt/jenkins/results/perf_win/")
         if not os.path.exists(perf_path):
             print "ERROR: no results to export"
             return
         cmd = [rsync, "-rlpD", "--exclude=build",
                perf_path, 
-               self._dest]
+               dest]
 
         try:
             run_batch_command(cmd)
