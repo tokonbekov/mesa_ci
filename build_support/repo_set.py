@@ -141,7 +141,11 @@ class TimeoutException(Exception):
 def is_build_lab():
     buildspec = ProjectMap().build_spec()
     master_host = buildspec.find("build_master").attrib["hostname"]
-    p = subprocess.Popen(["ping", "-c", "1", "-w", "1", "-q", master_host + ".local"],
+    cmd = ["ping", "-c", "1", "-w", "1", "-q", master_host + ".local"]
+    if os.name == "nt":
+        master_host = buildspec.find("build_master").attrib["host"]
+        cmd = ["ping", "-w", "1", master_host]
+    p = subprocess.Popen(cmd,
                          stderr=open(os.devnull, "w"), stdout=open(os.devnull, "w"))
     p.communicate()
     if p.returncode:
@@ -169,6 +173,10 @@ class RepoSet:
         build_lab_git = "git://" + \
                         ProjectMap().build_spec().find("build_master").attrib["hostname"] + \
                         ".local/git/"
+        if os.name == "nt":
+            build_lab_git = "git://" + \
+                            ProjectMap().build_spec().find("build_master").attrib["host"] + \
+                            "/git/"
         attempts = 1
         if build_lab:
             attempts = 10
