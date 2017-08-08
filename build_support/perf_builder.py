@@ -9,7 +9,7 @@ from . import ProjectMap, Options, RevisionSpecification, run_batch_command, Exp
 
 class PerfBuilder(object):
     def __init__(self, benchmark, iterations=2, discard=0,
-                 env=None, custom_iterations_fn=None):
+                 env=None, custom_iterations_fn=None, windowed=False):
         self._benchmark = benchmark
         self._iterations = iterations
         self._discard = discard
@@ -25,6 +25,7 @@ class PerfBuilder(object):
         self._env["LIBGL_DRIVERS_PATH"] = prefix + "dri"
         self._opt.update_env(self._env)
         self._custom_iterations_fn = custom_iterations_fn
+        self._windowed = windowed
 
     def build(self):
         # todo(majanes) possibly verify that benchmarks are in /opt
@@ -68,7 +69,7 @@ class PerfBuilder(object):
         mesa_dir = "/tmp/build_root/" + self._opt.arch + "/" + hw + "/usr/local/lib"
         os.chdir(self._pm.project_source_dir("sixonix"))
 
-        if os.name != "nt":
+        if os.name != "nt" and not self._windowed:
             self.set_resolution()
 
         benchmarks = self._benchmark
@@ -145,7 +146,10 @@ class PerfBuilder(object):
                      "OglVSInstancing",
                      "OglVSTangent",
                      "OglZBuffer"]:
-                cmd = [sys.executable, "run_benchmark.py", b]
+                cmd = [sys.executable, "run_benchmark.py"]
+                if self._windowed:
+                    cmd += ["--fullscreen", "false"]
+                cmd += [b]
             else:
                 cmd = ["./glx.sh", mesa_dir, b.upper()]
             print " ".join(cmd)
