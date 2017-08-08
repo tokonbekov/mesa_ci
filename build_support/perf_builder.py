@@ -171,16 +171,19 @@ class PerfBuilder(object):
                 r = "UFO"
             else:
                 r = str(RevisionSpecification().revision("mesa"))
-            result[benchmark] = {hw: {"mesa=" + r: [{"score": scores[benchmark]}]}}
-            out_dir = "/tmp/build_root/" + self._opt.arch + "/scores/" + benchmark + "/" + hw
+            full_bench_name = benchmark
+            if self._windowed:
+                full_bench_name = benchmark + "_windowed"
+            result[full_bench_name] = {hw: {"mesa=" + r: [{"score": scores[benchmark]}]}}
+            out_dir = "/tmp/build_root/" + self._opt.arch + "/scores/" + full_bench_name + "/" + hw
             if os.name == "nt":
-                out_dir = self._pm.project_source_dir("sixonix") + "/windows/scores/" + benchmark + "/" + hw
+                out_dir = self._pm.project_source_dir("sixonix") + "/windows/scores/" + full_bench_name + "/" + hw
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
             outf = out_dir + "/" + datetime.datetime.now().isoformat().replace(":", ".") + ".json"
             with open(outf, 'w') as of:
                 json.dump(result, fp=of)
-                
+
         check_gpu_hang(False)
         Export().export_perf()
 
