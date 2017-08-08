@@ -115,7 +115,12 @@ class Jenkins:
         self._revspec = revspec
         self._result_path = result_path
         self._time = str(time.time())
-        self._job_url = "http://" + self._server + "/job/Leeroy"
+
+    def job_url(self, invoke):
+        if "win" in invoke.options.hardware:
+            return "http://" + self._server + "/job/WinLeeroy"
+        return "http://" + self._server + "/job/Leeroy"
+
     # this function is common to jenkins.py
     def _reliable_url_open(self, url):
         # We use a loop to open the url because of DE3123
@@ -173,7 +178,7 @@ class Jenkins:
         r = git.Repo(ProjectMap().source_root())
         bs_branch = r.commit().hexsha
         url = "{0}/buildWithParameters?token=noauth&{1}&branch={2}&build_support_branch={3}".format(
-            self._job_url,
+            self.job_url(project_invoke),
             self._jenkins_params(project_invoke),
             branch,
             bs_branch
@@ -317,9 +322,10 @@ class Jenkins:
                 raise BuildFailure(a_job, abuild_page["url"])
 
     def get_matching_build(self, project_invoke):
+        job_url = self.job_url(project_invoke)
         f = None
         try:
-            f = urllib2.urlopen(self._job_url + "/api/python")
+            f = urllib2.urlopen(job_url + "/api/python")
         except:
             return None
 
@@ -328,7 +334,7 @@ class Jenkins:
         # check last 100 builds
         for abuild_number in range(max_job-1, max_job - 401, -1):
             try:
-                f = urllib2.urlopen(self._job_url + "/" + 
+                f = urllib2.urlopen(job_url + "/" + 
                                     str(abuild_number) + "/api/python")
             except:
                 continue
@@ -342,7 +348,7 @@ class Jenkins:
         while True:
             try:
                 max_job += 1
-                url = self._job_url + "/" + str(max_job) + "/api/python"
+                url = job_url + "/" + str(max_job) + "/api/python"
                 f = urllib2.urlopen(url)
                 abuild_page = ast.literal_eval(f.read())
                 if self.match_project_invoke(project_invoke, abuild_page):
