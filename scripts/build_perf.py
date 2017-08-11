@@ -13,21 +13,15 @@ def main():
     parser= argparse.ArgumentParser(description=description, 
                                     parents=[o._parser], 
                                     conflict_handler="resolve")
-    parser.add_argument('--project', dest='project', type=str, default="",
-                        help='Project to build. Default project is specified '\
-                        'for the branch in build_specification.xml')
 
     parser.add_argument('--revision', type=str, default="",
                         help="mesa revision to test.")
 
     args = parser.parse_args()
-    projects = []
-    if args.project:
-        projects = args.project.split(",")
     revision = args.revision
 
     bspec = bs.BuildSpecification()
-    bspec.checkout("mesa_perf")
+    bspec.checkout("mesa_master")
     mesa_repo = git.Repo(bs.ProjectMap().project_source_dir("mesa"))
 
     if ":" in revision:
@@ -56,7 +50,6 @@ def main():
     # used by other modules.  This code strips out incompatible args
     o = bs.Options(["bogus"])
     vdict = vars(args)
-    del vdict["project"]
     del vdict["revision"]
     o.__dict__.update(vdict)
     sys.argv = ["bogus"] + o.to_list()
@@ -66,8 +59,8 @@ def main():
 
     # checkout the desired revision on top of recent revisions
     if not revision:
-        # randomly select a commit post 11.2
-        branch_commit = mesa_repo.tags["17.0-branchpoint"].commit.hexsha
+        # randomly select a commit post 17.1
+        branch_commit = mesa_repo.tags["17.1-branchpoint"].commit.hexsha
         commits = []
         for commit in mesa_repo.iter_commits('origin/master', max_count=8000):
             if commit.hexsha == branch_commit:
@@ -85,11 +78,8 @@ def main():
     # create a result_path that is unique for this set of builds
     spec_xml = pm.build_spec()
     results_dir = spec_xml.find("build_master").attrib["results_dir"]
-    result_path = "/".join([results_dir, "perf", hashstr])
+    result_path = "/".join([results_dir, "mesa_master", hashstr, o.type])
     o.result_path = result_path
-
-    if not projects:
-        projects = ["perf-all"]
 
     # use a global, so signal handler can abort builds when scheduler
     # is interrupted
@@ -98,10 +88,7 @@ def main():
     jen = bs.Jenkins(result_path=result_path,
                      revspec=revspec)
 
-    depGraph = bs.DependencyGraph(projects, o)
-    for i in depGraph.all_builds():
-        if i.project != "mesa-perf":
-            i.set_info("status", "rebuild")
+    depGraph = bs.DependencyGraph("perf-all", o)
 
     # use a global, so signal handler can abort builds when scheduler
     # is interrupted
