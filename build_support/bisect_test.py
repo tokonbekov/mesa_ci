@@ -868,6 +868,8 @@ class TestLister:
             count += 1
             if count > 10:
                 break
+        if not os.path.exists(bad_dir):
+            return
         test_files = [bad_dir + "/" + f for f in os.listdir(bad_dir)]
         for a_file in test_files:
             if ("piglit-test" not in a_file and
