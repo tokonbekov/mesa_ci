@@ -138,9 +138,11 @@ class Jenkins:
                 time.sleep(5)
 
     def write_failure_log(self, project_invoke):
-        log_dir = ProjectMap().output_dir()
+        log_dir = self._result_path + "/test/logs"
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
         job_url = project_invoke.get_info("url")
-        run_batch_command(["wget", "-O", log_dir + project_invoke.to_short_string() + ".log",
+        run_batch_command(["wget", "-O", log_dir + "/" + project_invoke.to_short_string().replace(" ", "_") + ".log",
                            job_url + "/consoleText"])
 
     def build(self, project_invoke, branch="", extra_arg=None):
@@ -175,7 +177,7 @@ class Jenkins:
         if status == "failure":
             # raise BuildFailure(project_invoke, self._revision)
             # for now, let's attempt to rebuild failure projects
-            self.write_failure_log(project_invoke)
+            pass
 
         project_invoke.set_info("status", "building")
         project_invoke.set_info("url", "")
@@ -464,6 +466,7 @@ class Jenkins:
                 failure.invoke.set_info("status", "failure")
                 print "Build failure: " + failure.url
                 print "Build failure: " + str(failure.invoke)
+                self.write_failure_log(failure.invoke)
                 failure_builds.append(failure.invoke)
                 builds_in_round += 1
 
