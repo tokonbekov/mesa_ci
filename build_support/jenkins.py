@@ -142,7 +142,7 @@ class Jenkins:
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
         job_url = project_invoke.get_info("url")
-        run_batch_command(["wget", "-O", log_dir + "/" + project_invoke.to_short_string().replace(" ", "_") + ".log",
+        run_batch_command(["wget", "-o", "/dev/null", "-O", log_dir + "/" + project_invoke.to_short_string().replace(" ", "_") + ".log",
                            job_url + "/consoleText"])
 
     def build(self, project_invoke, branch="", extra_arg=None):
