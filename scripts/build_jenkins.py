@@ -137,6 +137,13 @@ def collate_tests(result_path, out_test_dir, make_tar=False):
                 print "WARN: failed to add file: " + shard_file
                 time.sleep(10)
         os.unlink(shard_file)
+
+    if os.path.exists(out_test_dir + "/test/logs"):
+        save_dir = os.getcwd()
+        os.chdir(out_test_dir + "/test")
+        tar.add("logs")
+        os.chdir(save_dir)
+
     tar.close()
     bs.run_batch_command(["xz", "-9", out_test_dir + "/test/results.tar"])
     os.chdir(save_dir)
