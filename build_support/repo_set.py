@@ -25,7 +25,6 @@
 #  *   Mark Janes <mark.a.janes@intel.com>
 #  **********************************************************************/
 
-import git
 import hashlib
 import json
 import os
@@ -34,6 +33,8 @@ import subprocess
 import sys
 import time
 import xml.etree.ElementTree as ET
+
+import git
 
 from . import ProjectMap
 from . import Options
