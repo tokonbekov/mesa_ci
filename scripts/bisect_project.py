@@ -38,7 +38,7 @@ spec_xml = pm.build_spec()
 results_dir = spec_xml.find("build_master").attrib["results_dir"]
 
 repos = bs.RepoSet()
-_revspec = bs.RevisionSpecification(from_cmd_line=revs)
+_revspec = bs.RevisionSpecification.from_cmd_line_param(revs)
 _revspec.checkout()
 
 proj_rev = args.good_rev.split("=")

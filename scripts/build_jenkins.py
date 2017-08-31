@@ -216,7 +216,7 @@ def main():
     bspec.checkout(branch)
     revspec = None
     if (revision):
-        revspec = bs.RevisionSpecification(from_cmd_line=revision.split())
+        revspec = bs.RevisionSpecification.from_cmd_line_param(revision.split())
         revspec.checkout()
 
     revspec = bs.RevisionSpecification()

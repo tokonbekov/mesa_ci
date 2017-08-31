@@ -68,7 +68,7 @@ def main():
             commits.append(commit.hexsha)
         revision = "mesa=" + str(commits[int(random.random() * len(commits))])
         
-    revspec = bs.RevisionSpecification(from_cmd_line=revision.split())
+    revspec = bs.RevisionSpecification.from_cmd_line_param(revision.split())
     revspec.checkout()
 
     revspec = bs.RevisionSpecification()
