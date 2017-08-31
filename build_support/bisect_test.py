@@ -28,7 +28,7 @@
 import re
 import os
 import time
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as et
 import ConfigParser
 
 from . import RevisionSpecification
@@ -392,7 +392,7 @@ class PiglitTest:
             print "BUILD FAILED - no test results: " + test_result
             return False
 
-        result = ET.parse(test_result)
+        result = et.parse(test_result)
         for testcase in result.findall("./testsuite/testcase"):
             testname = testcase.attrib["classname"] + "." + testcase.attrib["name"]
             #strip off the arch/platform and drop the special characters
@@ -413,7 +413,7 @@ class PiglitTest:
         return True
 
     def ForcePass(self, result_file):
-        result = ET.parse(result_file)
+        result = et.parse(result_file)
         for testcase in result.findall("./testsuite/testcase"):
             testname = testcase.attrib["classname"] + "." + testcase.attrib["name"]
             #strip off the arch/platform and drop the special characters
@@ -429,7 +429,7 @@ class PiglitTest:
                 testcase.remove(tag)
             stdout = testcase.find("system-out")
             if stdout is None:
-                stdout = ET.Element("system-out")
+                stdout = et.Element("system-out")
                 testcase.append(stdout)
             if stdout.text:
                 stdout.text = stdout.text + "WARN: stripping flaky test."
@@ -614,7 +614,7 @@ class CrucibleTest:
             print "BUILD FAILED - no test results: " + test_result
             return False
 
-        result = ET.parse(test_result)
+        result = et.parse(test_result)
         for testcase in result.findall("./testsuite/testcase"):
             testname = testcase.attrib["name"]
             #strip off the arch/platform
@@ -815,7 +815,7 @@ class DeqpTest:
             print "BUILD FAILED - no test results: " + test_result
             return False
 
-        result = ET.parse(test_result)
+        result = et.parse(test_result)
         for testcase in result.findall("./testsuite/testcase"):
             full_test_name = testcase.attrib["classname"] + "." + testcase.attrib["name"]
             # drop the hw/arch from the test name
@@ -884,7 +884,7 @@ class TestLister:
             self._add_tests(a_file)
 
     def _add_tests(self, test_path):
-        t = ET.parse(test_path)
+        t = et.parse(test_path)
         r = t.getroot()
 
         testclass = PiglitTest

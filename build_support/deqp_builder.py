@@ -6,7 +6,7 @@ import tempfile
 import time
 import datetime
 import subprocess
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as et
 import xml.sax.saxutils as saxutils
 
 from . import *
@@ -97,7 +97,7 @@ class DeqpTrie:
             self._trie["ESEXT-CTS"] = current_trie
         else:
             return
-        root = ET.parse(xml_file).getroot()
+        root = et.parse(xml_file).getroot()
         for tag in root:
             current_trie._add_tag(tag)
 
@@ -200,7 +200,7 @@ class DeqpTrie:
             self._stdout[test] = ""
             self._stderr[test] = "".join(err) + "\npid: {}\n".format(str(pid))
             try:
-                t = ET.fromstringlist(blob)
+                t = et.fromstringlist(blob)
                 stat_tag = t.find("./Result")
                 if stat_tag is None:
                     self._result[test] = "crash"

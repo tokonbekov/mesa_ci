@@ -32,7 +32,7 @@ import subprocess
 import sys
 import time
 import urllib2
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as et
 from . import Options
 from . import ProjectMap
 from . import run_batch_command
@@ -692,7 +692,7 @@ class PiglitTester(object):
         """this functionality has been duplicated in deqp-test/build.py.  If
         it needs to change, then either change it everywhere or refactor out
         the duplication."""
-        t = ET.parse(infile)
+        t = et.parse(infile)
         r = t.getroot()
         for a_suite in t.findall("testsuite"):
             # remove skipped tests, which uses ram on jenkins when

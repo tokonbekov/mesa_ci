@@ -32,7 +32,7 @@ import signal
 import subprocess
 import sys
 import time
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as et
 
 import git
 
@@ -166,7 +166,7 @@ class RepoSet:
         # key is project, value is the default branch for the repo (usually master)
         self._branches = {}
         if type(buildspec) == str or type(buildspec) == unicode:
-            buildspec = ET.parse(buildspec)
+            buildspec = et.parse(buildspec)
         repo_dir = ProjectMap().source_root() + "/repos"
         repos = buildspec.find("repos")
 
@@ -362,7 +362,7 @@ class RevisionSpecification:
 
     def from_string(self, spec):
         if type(spec) == str or type(spec) == unicode:
-            spec = ET.fromstring(spec)
+            spec = et.fromstring(spec)
         assert(spec.tag == "RevSpec")
         self._revisions = spec.attrib
 
@@ -394,10 +394,10 @@ class RevisionSpecification:
     def __str__(self):
         projects = self._revisions.keys()
         projects.sort()
-        tag = ET.Element("RevSpec")
+        tag = et.Element("RevSpec")
         for p in projects:
             tag.set(p, self._revisions[p])
-        return ET.tostring(tag)
+        return et.tostring(tag)
         
     def checkout(self):
         repo_set = RepoSet()
@@ -413,7 +413,7 @@ class RepoStatus:
         if not buildspec:
             buildspec = ProjectMap().build_spec()
         if type(buildspec) == str or type(buildspec) == unicode:
-            buildspec = ET.parse(buildspec)
+            buildspec = et.parse(buildspec)
 
         # key is project, value is repo object
         self._repos = RepoSet()
@@ -452,7 +452,7 @@ class BuildSpecification:
         if not buildspec:
             buildspec = ProjectMap().build_spec()
         if type(buildspec) == str or type(buildspec) == unicode:
-            buildspec = ET.parse(buildspec)
+            buildspec = et.parse(buildspec)
 
         self._buildspec = buildspec
         self._reposet = RepoSet()
@@ -506,14 +506,14 @@ class ProjectInvoke:
         self.revision_spec = revision_spec
 
     def __str__(self):
-        tag = ET.Element("ProjectInvoke")
+        tag = et.Element("ProjectInvoke")
         tag.set("Project", self.project)
-        tag.append(ET.fromstring(str(self.revision_spec)))
+        tag.append(et.fromstring(str(self.revision_spec)))
         tag.append(self.options.to_elementtree())
-        return ET.tostring(tag)
+        return et.tostring(tag)
 
     def from_string(self, string):
-        tag = ET.fromstring(string)
+        tag = et.fromstring(string)
         self.project = tag.attrib["Project"]
         self.options = Options(from_xml=tag.find("Options"))
         revtag = tag.find("RevSpec")

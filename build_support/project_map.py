@@ -26,7 +26,7 @@
 #  **********************************************************************/
 
 import sys, os
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as et
 import pdb
 
 from . import Options
@@ -112,4 +112,4 @@ class ProjectMap:
         return self._source_root + "/results"
 
     def build_spec(self):
-        return ET.parse(self.source_root() + "/build_specification.xml")
+        return et.parse(self.source_root() + "/build_specification.xml")

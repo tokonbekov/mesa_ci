@@ -27,7 +27,7 @@
 
 """handles command-line options to build.py, and makes them available to build routines"""
 import argparse, os, sys
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as et
 
 class CsvChoice(object):
     def __init__(self, *args):
@@ -137,7 +137,7 @@ class Options(object):
         return arglist
 
     def to_elementtree(self):
-        tag = ET.Element("Options")
+        tag = et.Element("Options")
         tag.set("action", ",".join(self.action))
         tag.set("arch", self.arch)
         tag.set("config", self.config)
@@ -151,7 +151,7 @@ class Options(object):
 
     def from_xml(self, xml):
         if type(xml) == str:
-            xml = ET.fromstring(xml)
+            xml = et.fromstring(xml)
         assert(xml.tag == "Options")
         self.action = xml.attrib["action"].split(",")
         self.arch = xml.attrib["arch"]
