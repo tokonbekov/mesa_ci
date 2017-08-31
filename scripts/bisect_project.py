@@ -80,7 +80,7 @@ if not new_failures.Tests():
 print "Found failures:"
 new_failures.Print()
 
-revspec = bs.RevisionSpecification(from_cmd_line=[proj + "=" + commits[-1].hexsha])
+revspec = bs.RevisionSpecification(revisions={proj: commits[-1].hexsha})
 revspec.checkout()
 revspec = bs.RevisionSpecification()
 hashstr = revspec.to_cmd_line_param().replace(" ", "_")

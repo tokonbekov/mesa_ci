@@ -56,7 +56,7 @@ found = False
 
 for project in ["mesa", "piglit", "waffle", "drm", "crucible"]:
     try:
-        revspec = bs.RevisionSpecification(from_cmd_line=[project + "=" + args.start_rev])
+        revspec = bs.RevisionSpecification(revisions={project: args.start_rev})
         revspec.checkout()
     except:
         print args.start_rev + " not found in " + project
