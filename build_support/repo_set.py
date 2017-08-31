@@ -338,17 +338,13 @@ class RepoSet:
         return revs
 
 class RevisionSpecification:
-    def __init__(self, from_string=None, from_cmd_line=None, revisions=None):
+    def __init__(self, from_cmd_line=None, revisions=None):
         # key is project, value is revision
         if revisions is None:
             self._revisions = {}
         else:
             assert isinstance(revisions, dict)
             self._revisions  = revisions
-            return
-
-        if from_string is not None:
-            self.from_string(from_string)
             return
 
         if from_cmd_line is not None:
@@ -374,11 +370,8 @@ class RevisionSpecification:
         inst = cls(revisions=elem.attrib)
         return inst
 
-    def from_string(self, spec):
-        if type(spec) == str or type(spec) == unicode:
-            spec = et.fromstring(spec)
-        assert(spec.tag == "RevSpec")
-        self._revisions = spec.attrib
+    def from_cmd_line_param(self, params):
+        self._revisions = dict(p.split('=') for p in params)
 
     def to_cmd_line_param(self):
         revs = []
@@ -395,15 +388,6 @@ class RevisionSpecification:
                 continue
             revs.append(project + "=" + rev)
         return " ".join(revs)
-
-    def from_cmd_line_param(self, params):
-        revs = []
-        for rev in params:
-            rev = rev.split("=")
-            rev[1] = '"' + rev[1] + '"'
-            revs.append(rev[0] + "=" + rev[1])
-        rev_text = "<RevSpec " + " ".join(revs) + "/>"
-        self.from_string(rev_text)
 
     def to_elementtree(self):
         elem = et.Element('RevSpec')
