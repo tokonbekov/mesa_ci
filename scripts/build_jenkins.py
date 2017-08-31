@@ -259,6 +259,11 @@ def main():
         bs.rmtree(out_log_dir)
     os.makedirs(out_log_dir)
 
+    # Add a revisions.xml file
+    if not os.path.exists(result_path):
+        os.makedirs(result_path)
+    revspec.to_elementtree().write(os.path.join(result_path, 'revisions.xml'))
+
     # use a global, so signal handler can abort builds when scheduler
     # is interrupted
     try:
