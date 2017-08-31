@@ -532,7 +532,7 @@ class ProjectInvoke:
         self.project = tag.attrib["Project"]
         self.options = Options(from_xml=tag.find("Options"))
         revtag = tag.find("RevSpec")
-        self.revision_spec = RevisionSpecification(from_string=revtag)
+        self.revision_spec = RevisionSpecification(revisions=revtag.attrib)
         
         
     def info_file(self):

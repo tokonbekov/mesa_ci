@@ -101,7 +101,8 @@ class Bisector:
         o.action = ["build", "test"]
 
         print "Bisector Bisect checking out: " + rev
-        revspec = RevisionSpecification(from_cmd_line=[rev])
+        revspec = RevisionSpecification(
+            revisions={repo_project: self.commits[current_build].hexsha})
         revspec.checkout()
         revspec = RevisionSpecification()
         hashstr = revspec.to_cmd_line_param().replace(" ", "_")
