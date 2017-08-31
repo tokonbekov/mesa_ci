@@ -5,7 +5,7 @@ import sys
 import tarfile
 import time
 from prettytable import PrettyTable
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as et
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), ".."))
 import build_support as bs
 
@@ -99,7 +99,7 @@ def collate_tests(result_path, out_test_dir, make_tar=False):
                 shards[shard_base_name] = []
             shards[shard_base_name].append(a_file)
             continue
-        t = ET.parse(out_test_dir + "/test/" + a_file)
+        t = et.parse(out_test_dir + "/test/" + a_file)
         r = t.getroot()
         strip_passes(r)
         t.write(a_file)
@@ -114,12 +114,12 @@ def collate_tests(result_path, out_test_dir, make_tar=False):
                 time.sleep(10)
         os.unlink(a_file)
     for (shard, files) in shards.items():
-        t = ET.parse(out_test_dir + "/test/" + files[0])
+        t = et.parse(out_test_dir + "/test/" + files[0])
         r = t.getroot()
         strip_passes(r)
         suite = r.find("testsuite")
         for shards in files[1:]:
-            st = ET.parse(out_test_dir + "/test/" + shards)
+            st = et.parse(out_test_dir + "/test/" + shards)
             sr = st.getroot()
             strip_passes(sr)
             for a_suite in sr.findall("testsuite"):
