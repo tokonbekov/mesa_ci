@@ -47,15 +47,15 @@ good_rev = proj_rev[1]
 proj_repo = repos.repo(proj)
 
 print proj + " revisions under bisection:"
-found = False
 commits = []
 for commit in proj_repo.iter_commits(max_count=5000):
     commits.append(commit)
     print commit.hexsha
     if good_rev in commit.hexsha:
-        found = True
         break
-assert(found)
+else:
+    print 'ERROR: Good commit ({}) not found'.format(good_rev)
+    sys.exit(1)
 
 # retest build, in case expected failures has been updated
 # copy build root to bisect directory
