@@ -391,14 +391,15 @@ class RevisionSpecification:
         rev_text = "<RevSpec " + " ".join(revs) + "/>"
         self.from_string(rev_text)
 
+    def to_elementtree(self):
+        elem = et.Element('RevSpec')
+        for n, h in sorted(self._revisions.iteritems(), key=lambda x: x[0]):
+            elem.set(n, h)
+        return et.ElementTree(elem)
+
     def __str__(self):
-        projects = self._revisions.keys()
-        projects.sort()
-        tag = et.Element("RevSpec")
-        for p in projects:
-            tag.set(p, self._revisions[p])
-        return et.tostring(tag)
-        
+        return et.tostring(self.to_elementtree().getroot())
+
     def checkout(self):
         repo_set = RepoSet()
         for (project, revision) in self._revisions.iteritems():
