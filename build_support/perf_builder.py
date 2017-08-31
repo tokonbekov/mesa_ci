@@ -19,8 +19,8 @@ class PerfBuilder(object):
         if self._env is None:
             self._env = {}
         build_root = self._pm.build_root()
-        hw_prefix = self._opt.hardware[:3]
-        prefix = build_root + "/" + hw_prefix + "/usr/local/lib/"
+        cpu_hw = self._opt.hardware[:3]
+        prefix = build_root + "/" + cpu_hw + "/usr/local/lib/"
         self._env["LD_LIBRARY_PATH"] = prefix + ":" + prefix + "dri"
         self._env["LIBGL_DRIVERS_PATH"] = prefix + "dri"
         self._opt.update_env(self._env)
@@ -65,8 +65,8 @@ class PerfBuilder(object):
         if self._opt.hardware == "builder":
             print "ERROR: hardware must be set to a specific sku.  'builder' is not a valid hardware setting."
             assert(False)
-        hw = self._opt.hardware[:3]
-        mesa_dir = "/tmp/build_root/" + self._opt.arch + "/" + hw + "/usr/local/lib"
+        cpu_hw = self._opt.hardware[:3]
+        mesa_dir = "/tmp/build_root/" + self._opt.arch + "/" + cpu_hw + "/usr/local/lib"
         os.chdir(self._pm.project_source_dir("sixonix"))
 
         if os.name != "nt" and not self._windowed:
@@ -85,7 +85,7 @@ class PerfBuilder(object):
             it_multiplier = 5
         for b in benchmarks:
             if self._custom_iterations_fn:
-                iterations = self._custom_iterations_fn(b, hw) or iterations
+                iterations = self._custom_iterations_fn(b, cpu_hw) or iterations
             bench_runs += [b] * iterations * it_multiplier
 
         random.shuffle(bench_runs)
@@ -178,10 +178,13 @@ class PerfBuilder(object):
             full_bench_name = benchmark
             if self._windowed:
                 full_bench_name = benchmark + "_windowed"
-            result[full_bench_name] = {hw: {"mesa=" + r: [{"score": scores[benchmark]}]}}
-            out_dir = "/tmp/build_root/" + self._opt.arch + "/scores/" + full_bench_name + "/" + hw
+            gpu_hw = self._opt.hardware.split("-")[0]
+            result[full_bench_name] = {gpu_hw: {"mesa=" + r: [{"score": scores[benchmark]}]}}
+            out_dir = "/tmp/build_root/" + self._opt.arch + "/scores/" + \
+                      full_bench_name + "/" + gpu_hw
             if os.name == "nt":
-                out_dir = self._pm.project_source_dir("sixonix") + "/windows/scores/" + full_bench_name + "/" + hw
+                out_dir = self._pm.project_source_dir("sixonix") + "/windows/scores/" + \
+                          full_bench_name + "/" + gpu_hw
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
             outf = out_dir + "/" + datetime.datetime.now().isoformat().replace(":", ".") + ".json"
