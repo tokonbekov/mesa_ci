@@ -68,8 +68,8 @@ else:
 
 # retest the set of failed tests on the specified blame revision
 repos = bs.RepoSet()
-# Use a copy here to ensure that the dict isn't mutated later
-_revspec = bs.RevisionSpecification(revisions=rev_hash.copy())
+_revspec = bs.RevisionSpecification.from_xml_file(
+    os.path.join(os.path.abspath(args.result_path), 'revisions.xml'))
 _revspec.checkout()
 _revspec = bs.RevisionSpecification()
 

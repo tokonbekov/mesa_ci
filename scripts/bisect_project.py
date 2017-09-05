@@ -14,7 +14,7 @@ sys.path.append(current_dir + "/..")
 import build_support as bs
 
 parser = argparse.ArgumentParser(description="bisects failures")
-parser.add_argument("--result_path", type=str)
+parser.add_argument("--result_path", type=os.path.abspath)
 parser.add_argument("--good_rev", type=str,
                     help="project and rev, eg: mesa=hexsha")
 parser.add_argument('--to', metavar='to', type=str, default="",
@@ -24,21 +24,26 @@ parser.add_argument('--dir', metavar='dir', type=str, default="",
 args = parser.parse_args(sys.argv[1:])
 
 # get revisions from out directory
-test_dir = os.path.abspath(args.result_path + "/test")
+test_dir = os.path.join(args.result_path, "test")
 if not os.path.exists(test_dir):
     print "ERROR: no tests in --result_path: " + test_dir
     sys.exit(-1)
-
-dirnames = os.path.abspath(test_dir).split("/")
-hash_dir = dirnames[5]
-revs = hash_dir.split("_")
 
 pm = bs.ProjectMap()
 spec_xml = pm.build_spec()
 results_dir = spec_xml.find("build_master").attrib["results_dir"]
 
 repos = bs.RepoSet()
-_revspec = bs.RevisionSpecification.from_cmd_line_param(revs)
+try:
+    _revspec = bs.RevisionSpecification.from_xml_file(
+        os.path.join(os.path.abspath(args.result_path), 'revisions.xml'))
+except IOError:
+    # Bisecting across the conversion from parsing the directory name to using
+    # revisions.xml file, allow fallback to the old method.
+    # This can be removed after a couple of months when all pre-revisions.xml
+    # builds are flushed from the history
+    _revspec = bs.RevisionSpecification.from_cmd_line_param(
+        test_dir.split('/')[5].split('_'))
 _revspec.checkout()
 
 proj_rev = args.good_rev.split("=")
@@ -63,7 +68,7 @@ bisect_dir = args.dir
 if bisect_dir == "":
     bisect_dir = results_dir + "/bisect/" + datetime.datetime.now().isoformat()
 
-cmd = ["rsync", "-rlptD", "--exclude", "/*test/", "/".join(dirnames[:-1]) +"/", bisect_dir]
+cmd = ["rsync", "-rlptD", "--exclude", "/*test/", args.result_path, bisect_dir]
 bs.run_batch_command(cmd)
 
 if not bs.retest_failures(args.result_path, bisect_dir):
