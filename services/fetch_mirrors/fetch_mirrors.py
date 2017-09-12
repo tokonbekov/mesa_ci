@@ -55,7 +55,7 @@ def robust_update():
     _success = False
     while not _success:
         try:
-            _repo = git.Repo("/var/lib/git/mesa_jenkins")
+            _repo = git.Repo(bs.ProjectMap().source_root())
             _repo.remotes.origin.pull()
             _success = True
         except:
@@ -88,6 +88,10 @@ def main():
         bs.ProjectMap()
     except:
         sys.argv[0] = "/var/lib/git/mesa_jenkins/foo.py"
+        if socket.gethostname() == "otc-mesa-android":
+            sys.argv[0] = "/var/lib/git/mesa_perf/foo.py"
+
+    robust_update()
 
     pm = bs.ProjectMap()
     spec_file = pm.source_root() + "/build_specification.xml"
