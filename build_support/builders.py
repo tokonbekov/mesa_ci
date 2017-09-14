@@ -563,8 +563,10 @@ class PiglitTester(object):
                                              "ext_framebuffer_multisample.enable-flag",
                                              # flaky
                                              "ext_framebuffer_multisample.accuracy",
+                                             # bug 102594
                                              "nv_conditional_render.drawpixels",
-                                             "nv_conditional_render.clear"]
+                                             "nv_conditional_render.clear",
+                                             "nv_conditional_render.vertex_array"]
 
         if "bdw" in hardware:
             exclude_tests = exclude_tests + ["arb_shader_image_load_store.execution.basic-imagestore-from-uniform"]
