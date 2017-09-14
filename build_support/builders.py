@@ -626,6 +626,8 @@ class PiglitTester(object):
             include_tests = ["--include-tests", self._piglit_test]
             
         concurrency_options = ["-c"]
+        if "DEQP_DETECT_GPU_HANG" in self.env:
+            concurrency_options = ["-1", "-v"]
             
         streamedOutput = True
         if o.retest_path:
