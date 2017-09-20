@@ -1,0 +1,8 @@
+dEQP-EGL.functional.buffer_age.no_preserve
+dEQP-EGL.functional.resize
+dEQP-EGL.functional.sharing.gles2.multithread
+dEQP-EGL.functional.query_context.simple.query_api
+dEQP-EGL.functional.thread_cleanup.multi_context_single_surface
+dEQP-EGL.functional.thread_cleanup.single_context_single_surface
+dEQP-EGL.functional.robustness.reset_context.fixed_function_pipeline.reset_status.index_buffer_out_of_bounds
+dEQP-EGL.functional.multithread.pbuffer_single_window

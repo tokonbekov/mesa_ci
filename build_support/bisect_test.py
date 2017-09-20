@@ -47,8 +47,6 @@ class NoConfigFile(Exception):
 def get_conf_file(hardware, arch, project="piglit-test"):
     pm = ProjectMap()
     conf_dir = pm.source_root() + "/" + project + "/"
-    if "glk" in hardware or "cfl" in hardware:
-        conf_dir = pm.project_source_dir("prerelease") + "/" + project + "/"
     conf_file = conf_dir + "/" + hardware + arch + ".conf"
     if not os.path.exists(conf_file):
         conf_file = conf_dir + "/" + hardware + ".conf"

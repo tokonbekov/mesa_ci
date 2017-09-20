@@ -731,8 +731,6 @@ class CtsTestList(object):
     def blacklist(self, all_tests):
         project = self.pm.current_project()
         blacklist_dir = self.pm.project_build_dir(project) + "/"
-        if "glk" in self.o.hardware:
-            blacklist_dir = self.pm.project_source_dir("prerelease") + "/" + project + "/"
         blacklist = DeqpTrie()
         blacklist_file = blacklist_dir + self.o.hardware + self.o.arch + "_blacklist.txt"
         if os.path.exists(blacklist_file):
