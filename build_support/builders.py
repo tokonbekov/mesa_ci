@@ -534,8 +534,8 @@ class PiglitTester(object):
         if "ivbgt1" in hardware or "hsw" in hardware:
             exclude_tests += ["arb_buffer_storage.bufferstorage-persistent read"]
 
-        if "hsw" in hardware:
-            exclude_tests += ["arb_gpu_shader5.arb_gpu_shader5-emitstreamvertex_nodraw"]
+        # bug 96907
+        exclude_tests += ["arb_gpu_shader5.arb_gpu_shader5-emitstreamvertex_nodraw"]
 
         if "hsw" in hardware:
             exclude_tests += [
