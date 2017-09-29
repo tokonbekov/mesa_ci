@@ -576,7 +576,7 @@ class PiglitTester(object):
             exclude_tests = exclude_tests + ["variable-indexing.vs-output-array-vec4-index-wr-before-gs"]
 
         if "bdwgt3e" in hardware:
-            exclude_tests += ["piglit.spec.arb_shader_clock.execution.clock2x32"]
+            exclude_tests += ["spec.arb_shader_clock.execution"]
 
         # kbl is same as skl, as a starting point
         if "skl" in hardware or "kbl" in hardware:
