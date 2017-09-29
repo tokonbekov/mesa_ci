@@ -605,9 +605,6 @@ class PiglitTester(object):
             # flaky: piglit.spec.!opengl 1_1.getteximage-formats
             exclude_tests += ["opengl.1_1.getteximage-formats"]
 
-        if "glk" in hardware:
-            exclude_tests += ["ext_framebuffer_multisample.accuracy"]
-
         if "bxt" in hardware:
             exclude_tests += ["arb_compute_shader.execution.simple-barrier-atomics"]
 
