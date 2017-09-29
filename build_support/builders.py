@@ -352,7 +352,67 @@ class CMakeBuilder(object):
                 continue
             (bin_dir, exe) = os.path.split(match.group(1))
             #bs.GTest(bin_dir, exe, working_dir=bin_dir).run_tests()
-    
+
+class MesonBuilder(object):
+
+    def __init__(self, extra_definitions=None, compiler="gcc", install=True):
+        self._options = Options()
+        self._project_map = ProjectMap()
+        self._compiler = compiler
+        self._install = install
+        self._extra_definitions = extra_definitions or []
+
+        project = self._project_map.current_project()
+
+        self._src_dir = self._project_map.project_source_dir(project)
+        self._build_root = self._project_map.build_root()
+        self._build_dir = os.path.join(self._src_dir, "build_" + self._options.arch)
+
+    def build(self):
+        if not os.path.exists(self._src_dir + "/meson.build"):
+            return
+        env = {
+            'PKG_CONFIG_PATH': get_package_config_path(),
+            'CC': 'gcc' if self._compiler != 'clang' else 'clang',
+            'CXX': 'g++' if self._compiler != 'clang' else 'clang++',
+            'CFLAGS': '-m64' if self._options.arch == 'm64' else '-m32',
+            'CXXFLAGS': '-m64' if self._options.arch == 'm64' else '-m32',
+        }
+        self._options.update_env(env)
+
+        returnto = os.getcwd()
+        os.chdir(self._src_dir)
+
+        run_batch_command(['meson', self._build_dir, '--prefix', self._build_root] +
+                          self._extra_definitions, env=env)
+        run_batch_command(['ninja', '-C', self._build_dir])
+        if self._install:
+            print "Installing: output suppressed"
+            run_batch_command(['ninja', '-C', self._build_dir, 'install'],
+                              streamedOutput=False, quiet=True)
+
+        os.chdir(returnto)
+
+        Export().export()
+
+    def test(self):
+        if not os.path.exists(self._src_dir + "/meson.build"):
+            return
+        returnto = os.getcwd()
+        os.chdir(self._src_dir)
+
+        try:
+            run_batch_command(['ninja', '-C', self._build_dir, 'test'])
+        except subprocess.CalledProcessError:
+            os.chdir(returnto)
+            Export().create_failing_test(self._project + '-make-test-failure')
+        os.chdir(returnto)
+
+    def clean(self):
+        git_clean(self._src_dir)
+        rmtree(self._build_dir)
+        assert not os.path.exists(self._build_dir)
+
 class PiglitTester(object):
     def __init__(self, _suite="quick", device_override=None, piglit_test=None):
         self.device_override = device_override
