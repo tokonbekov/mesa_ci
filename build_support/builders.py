@@ -545,6 +545,10 @@ class PiglitTester(object):
                 'ext_framebuffer_multisample.accuracy',
                 'spec.arb_gpu_shader_fp64.execution.vs-double-uniform-array-direct-indirect-non-uniform-control-flow',
                 'spec.arb_gpu_shader_fp64.execution.fs-double-uniform-array-direct-indirect-non-uniform-control-flow',
+                # https://bugs.freedesktop.org/show_bug.cgi?id=103085
+                'spec.arb_indirect_parameters.tf-count-arrays',
+                'spec.arb_indirect_parameters.tf-count-elements',
+
             ]
 
 
