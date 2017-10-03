@@ -115,9 +115,12 @@ def check_gpu_hang(identify_test=True):
     # (user=jenkins)
     if os.name == "nt":
         return
-    (out, _) = run_batch_command(["dmesg", "--time-format", "iso"],
-                                 quiet=True,
-                                 streamedOutput=False)
+    try:
+        (out, _) = run_batch_command(["dmesg", "--time-format", "iso"],
+                                     quiet=True,
+                                     streamedOutput=False)
+    except:
+        return
     hang_text = ""
     for a_line in out.split('\n'):
         if "gpu hang" in a_line.lower():
