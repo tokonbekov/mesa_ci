@@ -540,15 +540,15 @@ class PiglitTester(object):
         # bug 96907
         exclude_tests += ["arb_gpu_shader5.arb_gpu_shader5-emitstreamvertex_nodraw"]
 
+        # https://bugs.freedesktop.org/show_bug.cgi?id=103085
+        exclude_tests += ['spec.arb_indirect_parameters.tf-count-arrays',
+                          'spec.arb_indirect_parameters.tf-count-elements']
+
         if "hsw" in hardware:
             exclude_tests += [
                 'ext_framebuffer_multisample.accuracy',
                 'spec.arb_gpu_shader_fp64.execution.vs-double-uniform-array-direct-indirect-non-uniform-control-flow',
                 'spec.arb_gpu_shader_fp64.execution.fs-double-uniform-array-direct-indirect-non-uniform-control-flow',
-                # https://bugs.freedesktop.org/show_bug.cgi?id=103085
-                'spec.arb_indirect_parameters.tf-count-arrays',
-                'spec.arb_indirect_parameters.tf-count-elements',
-
             ]
 
 
