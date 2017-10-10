@@ -95,6 +95,9 @@ class DeqpTrie:
         elif "ESEXT-CTS" in xml_file:
             current_trie = DeqpTrie()
             self._trie["ESEXT-CTS"] = current_trie
+        elif "GL46" in xml_file:
+            current_trie = DeqpTrie()
+            self._trie["KHR-GL46"] = current_trie
         else:
             return
         root = et.parse(xml_file).getroot()

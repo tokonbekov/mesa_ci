@@ -840,7 +840,8 @@ class CtsBuilder(CMakeBuilder):
         env = {"CC":"ccache gcc",
                "CXX":"ccache g++",
                "CFLAGS":cflag,
-               "CXXFLAGS":cxxflag}
+               "CXXFLAGS":cxxflag,
+               "PKG_CONFIG_PATH":get_package_config_path()}
         self._options.update_env(env)
         
         run_batch_command(["cmake", "-GNinja", self._src_dir] + self._extra_definitions,
@@ -849,8 +850,11 @@ class CtsBuilder(CMakeBuilder):
         run_batch_command(["ninja","-j" + str(cpu_count())], env=env)
 
         install_dir = pm.build_root() + "/bin/" + self._suite
+        binary_dir = self._build_dir + "/cts"
+        if self._suite == "gl":
+            binary_dir = self._build_dir + "/external/openglcts/modules"
         run_batch_command(["mkdir", "-p", install_dir])
-        run_batch_command(["cp", "-a", self._build_dir + "/cts",
+        run_batch_command(["cp", "-a", binary_dir,
                               install_dir])
 
         os.chdir(savedir)

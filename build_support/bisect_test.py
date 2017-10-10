@@ -669,6 +669,8 @@ class DeqpTest:
             self.project = "deqp-test"
         if "dEQP-EGL" in self.test_name:
             self.project = "deqp-test"
+        if "KHR-GL46" in self.test_name:
+            self.project = "glcts-test"
 
         hwarch = full_test_name.split(".")[-1]
         self.hardware = hwarch[:-3]
@@ -851,6 +853,7 @@ class TestLister:
         self._tests["crucible-test"] = {}
         self._tests["vulkancts-test"] = {}
         self._tests["glescts-test"] = {}
+        self._tests["glcts-test"] = {}
 
         test_files = []
         if os.path.isfile(bad_dir):
@@ -876,6 +879,7 @@ class TestLister:
                 "piglit-vulkancts-test" not in a_file and
                 "piglit-cpu-test" not in a_file and
                 "piglit-cts" not in a_file and
+                "piglit-glcts" not in a_file and
                 "piglit-crucible" not in a_file and
                 "piglit-deqp" not in a_file and
                 "piglit-glescts" not in a_file):
@@ -890,6 +894,8 @@ class TestLister:
         if "crucible" in os.path.basename(test_path):
             testclass = CrucibleTest
         if "glescts" in os.path.basename(test_path):
+            testclass = DeqpTest
+        if "glcts" in os.path.basename(test_path):
             testclass = DeqpTest
         if "vulkancts" in os.path.basename(test_path):
             testclass = DeqpTest
