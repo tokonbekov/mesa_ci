@@ -405,7 +405,8 @@ class MesonBuilder(object):
             run_batch_command(['ninja', '-C', self._build_dir, 'test'])
         except subprocess.CalledProcessError:
             os.chdir(returnto)
-            Export().create_failing_test(self._project + '-make-test-failure')
+            Export().create_failing_test(
+                self._project_map.current_project() + '-make-test-failure')
         os.chdir(returnto)
 
     def clean(self):
