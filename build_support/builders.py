@@ -396,18 +396,7 @@ class MesonBuilder(object):
         Export().export()
 
     def test(self):
-        if not os.path.exists(self._src_dir + "/meson.build"):
-            return
-        returnto = os.getcwd()
-        os.chdir(self._src_dir)
-
-        try:
-            run_batch_command(['ninja', '-C', self._build_dir, 'test'])
-        except subprocess.CalledProcessError:
-            os.chdir(returnto)
-            Export().create_failing_test(
-                self._project_map.current_project() + '-make-test-failure', '')
-        os.chdir(returnto)
+        return
 
     def clean(self):
         git_clean(self._src_dir)
