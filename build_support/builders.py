@@ -406,7 +406,7 @@ class MesonBuilder(object):
         except subprocess.CalledProcessError:
             os.chdir(returnto)
             Export().create_failing_test(
-                self._project_map.current_project() + '-make-test-failure')
+                self._project_map.current_project() + '-make-test-failure', '')
         os.chdir(returnto)
 
     def clean(self):
