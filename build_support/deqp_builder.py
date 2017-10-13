@@ -668,23 +668,27 @@ def generation(options):
         return 4.0
 
 class CtsTestList(object):
-    def __init__(self):
+    def __init__(self,binary=None):
         self.pm = ProjectMap()
         self.o = Options()
         self.version = None
+        self.binary = binary
 
     def tests(self, env=None):
-        br = self.pm.build_root()
+        br = self.pm.build_root() + "/share"
         whitelists = {
-            "ES2-CTS-cases.xml": br + "/bin/es/cts/gl_cts/data/aosp_mustpass/gles2-master.txt",
-            "ES3-CTS-cases.xml": br + "/bin/es/cts/gl_cts/data/aosp_mustpass/gles3-master.txt",
-            "ES31-CTS-cases.xml": br + "/bin/es/cts/gl_cts/data/aosp_mustpass/gles31-master.txt",
-            "ES32-CTS-cases.xml": br + "/bin/es/cts/gl_cts/data/aosp_mustpass/gles32-master.txt",
+            "ES2-CTS-cases.xml": br + "/khronos_mustpass/3.2.4.x/gles2-gtf-egl.txt",
+            "ES3-CTS-cases.xml": br + "/khronos_mustpass/3.2.4.x/gles2-gtf-master.txt",
+            "ES31-CTS-cases.xml": br + "/khronos_mustpass/3.2.4.x/gles2-khr-master.txt",
+            "ES32-CTS-cases.xml": br + "/khronos_mustpass/3.2.4.x/gles31-gtf-master.txt",
+            "ES32-CTS-cases.xml": br + "/khronos_mustpass/3.2.4.x/gles31-khr-master.txt",
+            "ES32-CTS-cases.xml": br + "/khronos_mustpass/3.2.4.x/gles32-khr-master.txt",
+            "ES32-CTS-cases.xml": br + "/khronos_mustpass/3.2.4.x/gles3-gtf-master.txt",
+            "ES32-CTS-cases.xml": br + "/khronos_mustpass/3.2.4.x/gles3-khr-master.txt"
             }
 
         # provide a DeqpTrie with all tests
-        binary = br + "/bin/es/cts/glcts"
-        cts_dir = os.path.dirname(binary)
+        cts_dir = os.path.dirname(self.binary)
         os.chdir(cts_dir)
         if env is None:
             libdir = "x86_64-linux-gnu"
@@ -695,10 +699,9 @@ class CtsTestList(object):
                    br + "/lib/" + libdir + ":" + br + "/lib/dri",
                    "LIBGL_DRIVERS_PATH" : br + "/lib/dri"}
             self.o.update_env(env)
-
         save_override = env["MESA_GLES_VERSION_OVERRIDE"]
         env["MESA_GLES_VERSION_OVERRIDE"] = "3.2"
-        cmd = [binary, "--deqp-runmode=xml-caselist"]
+        cmd = [self.binary, "--deqp-runmode=xml-caselist"]
 
         # Try to generate the case list a lot, if that fails then just bail.
         # This is related to a bug in the gles-cts
