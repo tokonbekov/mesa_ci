@@ -570,7 +570,7 @@ class PiglitTester(object):
         exclude_tests += ["spec.ext_shader_samples_identical.glsl-es-3_10.compiler.all-functions_vert",
                           "spec.oes_shader_io_blocks.compiler.layout-location-aliasing_vert",
                           # flaky:
-                          "piglit.spec.arb_shader_clock.execution.clock2x32"]
+                          "spec.arb_shader_clock.execution.clock2x32"]
         
         # bogus test
         exclude_tests += ["arb_shader_image_load_store.execution.coherency-extra"]
