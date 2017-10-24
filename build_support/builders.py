@@ -896,9 +896,7 @@ class CtsBuilder(CMakeBuilder):
         run_batch_command(["ninja","-j" + str(cpu_count())], env=env)
 
         install_dir = pm.build_root() + "/bin/" + self._suite
-        binary_dir = self._build_dir + "/modules"
-        if self._suite == "gl":
-            binary_dir = self._build_dir + "/external/openglcts/modules"
+        binary_dir = self._build_dir + "/external/openglcts/modules"
         run_batch_command(["mkdir", "-p", install_dir])
         run_batch_command(["cp", "-a", binary_dir,
                               install_dir])
@@ -909,7 +907,3 @@ class CtsBuilder(CMakeBuilder):
         os.chdir(savedir)
 
         Export().export()
-
-# 16:12:43  cp -a /home/jenkins/workspace/Leeroy/repos/cts/build_m64/modules /tmp/build_root/m64/bin/es
-# 16:12:44  cp -a /home/jenkins/workspace/Leeroy/repos/build_m64/external/openglcts/modules/gl_cts/data/mustpass/gles/khronos_mustpass /tmp/build_root/m64/share
-# /src/mesa_jenkins/repos/cts$ cd modules/ cd build_m64/
