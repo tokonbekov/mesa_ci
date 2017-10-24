@@ -62,7 +62,22 @@ class DeqpTrie:
             
     def add_xml(self, xml_file):
         current_trie = None
-        if "dEQP-GLES2-cases" in xml_file:
+        if "KHR-GLES2-cases" in xml_file:
+            current_trie = DeqpTrie()
+            self._trie["KHR-GLES2"] = current_trie
+        elif "KHR-GLES3-cases" in xml_file:
+            current_trie = DeqpTrie()
+            self._trie["KHR-GLES3"] = current_trie
+        elif "KHR-GLES31-cases" in xml_file:
+            current_trie = DeqpTrie()
+            self._trie["KHR-GLES31"] = current_trie
+        elif "KHR-GLES32-cases" in xml_file:
+            current_trie = DeqpTrie()
+            self._trie["KHR-GLES32"] = current_trie
+        elif "KHR-GLESEXT-cases" in xml_file:
+            current_trie = DeqpTrie()
+            self._trie["KHR-GLESEXT"] = current_trie
+        elif "dEQP-GLES2-cases" in xml_file:
             current_trie = DeqpTrie()
             self._trie["dEQP-GLES2"] = current_trie
         elif "dEQP-GLES3-cases" in xml_file:
