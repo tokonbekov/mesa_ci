@@ -92,70 +92,14 @@ class PerfBuilder(object):
         iteration = 0
         for b in bench_runs:
             cmd = []
-            if b in ["manhattan",
-                     "manhattan_o",
-                     "car_chase",
-                     "car_chase_o",
-                     "trex",
-                     "trex_o",
-                     "fill",
-                     "fill_o",
-                     "tess",
-                     "tess_o",
-                     "driver2",
-                     "driver2_o",
-                     "alu2",
-                     "alu2_o",
-                     "heaven",
-                     "valley",
-                     "OglBatch0",
-                     "OglBatch1",
-                     "OglBatch2",
-                     "OglBatch3",
-                     "OglBatch4",
-                     "OglBatch5",
-                     "OglBatch6",
-                     "OglBatch7",
-                     "OglCSCloth",
-                     "OglCSDof",
-                     "OglDeferred",
-                     "OglDeferredAA",
-                     "OglDrvRes",
-                     "OglDrvShComp",
-                     "OglDrvState",
-                     "OglFillPixel",
-                     "OglFillTexMulti",
-                     "OglFillTexSingle",
-                     "OglGeomPoint",
-                     "OglGeomTriList",
-                     "OglGeomTriStrip",
-                     "OglHdrBloom",
-                     "OglMultithread",
-                     "OglPSBump2",
-                     "OglPSBump8",
-                     "OglPSPhong",
-                     "OglPSPom",
-                     "OglShMapPcf",
-                     "OglShMapVsm",
-                     "OglTerrainFlyInst",
-                     "OglTerrainFlyTess",
-                     "OglTerrainPanInst",
-                     "OglTerrainPanTess",
-                     "OglTexFilterAniso",
-                     "OglTexFilterTri",
-                     "OglTexMem128",
-                     "OglTexMem512",
-                     "OglVSDiffuse1",
-                     "OglVSDiffuse8",
-                     "OglVSInstancing",
-                     "OglVSTangent",
-                     "OglZBuffer"]:
-                cmd = [sys.executable, "run_benchmark.py"]
-                if self._windowed:
-                    cmd += ["--fullscreen", "false"]
-                cmd += [b]
-            else:
-                cmd = ["./glx.sh", mesa_dir, b.upper()]
+            interpreter = sys.executable
+            # sixonix requires python3
+            if not sys.version.startswith("3"):
+                interpreter = "python3"
+            cmd = [interpreter, "sixonix.py", "run"]
+            if not self._windowed:
+                cmd += ["--fullscreen"]
+            cmd += [b]
             print " ".join(cmd)
             (out, err) = run_batch_command(cmd, streamedOutput=False, env=self._env)
             if err:
