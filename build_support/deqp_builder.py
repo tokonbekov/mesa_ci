@@ -748,8 +748,7 @@ class CtsTestList(object):
         blacklist_file = blacklist_dir + self.o.hardware[:3] + "_blacklist.txt"
         if os.path.exists(blacklist_file):
             blacklist.add_txt(blacklist_file)
-        if os.path.exists(blacklist_file) and os.stat(blacklist_file).st_size > 0:
-            all_tests.filter(blacklist)
+        all_tests.filter(blacklist)
         if not self.version:
             self.version = mesa_version()
         unsupported = []
