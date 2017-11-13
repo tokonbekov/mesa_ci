@@ -804,6 +804,8 @@ class DeqpTest:
             base_name = "piglit-deqp-test_"
         if self.project == "vulkancts-test":
             base_name = "piglit-vulkancts-test_"
+        if self.project == "glcts-test":
+            base_name = "piglit-glcts-test_"
 
         test_result = "/".join([result_path, "test", base_name +
                                 self.hardware + "_" + self.arch + "_0.xml"])
