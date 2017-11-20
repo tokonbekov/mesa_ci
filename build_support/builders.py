@@ -620,6 +620,7 @@ class PiglitTester(object):
                                              "ext_framebuffer_multisample.accuracy",
                                              # bug 102594
                                              "nv_conditional_render.drawpixels",
+                                             "nv_conditional_render.copypixels",
                                              "nv_conditional_render.clear",
                                              "nv_conditional_render.vertex_array"]
 
