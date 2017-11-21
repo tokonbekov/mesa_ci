@@ -32,6 +32,7 @@ import subprocess
 import sys
 import importlib
 import git
+import glob
 import time
 import urllib2
 import xml.etree.cElementTree as et
@@ -872,6 +873,14 @@ class CtsBuilder(CMakeBuilder):
         if not os.path.exists(spirvheaders):
             os.symlink("../../spirvheaders", spirvheaders)
 
+        # apply patches if they exist
+        for patch in glob.glob(pm.project_build_dir() + "/*.patch"):
+            os.chdir(self._src_dir)
+            try:
+                run_batch_command(["git", "am", patch])
+            except:
+                print "WARN: failed to apply patch: " + patch
+            
         if not os.path.exists(self._build_dir):
             os.makedirs(self._build_dir)
 
