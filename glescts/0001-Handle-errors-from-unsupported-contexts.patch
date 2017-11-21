@@ -1,0 +1,30 @@
+From 5695fbd5452b6281cdf5d8ca23a856023c3f2f08 Mon Sep 17 00:00:00 2001
+From: Mark Janes <mark.a.janes@intel.com>
+Date: Tue, 21 Nov 2017 08:52:00 -0800
+Subject: [PATCH] Handle errors from unsupported contexts
+
+---
+ framework/common/tcuTestHierarchyIterator.cpp | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/framework/common/tcuTestHierarchyIterator.cpp b/framework/common/tcuTestHierarchyIterator.cpp
+index 3a72b1d80..a1ef73a15 100644
+--- a/framework/common/tcuTestHierarchyIterator.cpp
++++ b/framework/common/tcuTestHierarchyIterator.cpp
+@@ -62,8 +62,11 @@ void DefaultHierarchyInflater::enterTestPackage (TestPackage* testPackage, vecto
+ 			m_testCtx.setCurrentArchive(m_testCtx.getRootArchive());
+ 	}
+ 
+-	testPackage->init();
+-	testPackage->getChildren(children);
++    try {
++		// unsupported contexts will throw
++		testPackage->init();
++		testPackage->getChildren(children);
++    } catch (...) {}
+ }
+ 
+ void DefaultHierarchyInflater::leaveTestPackage (TestPackage* testPackage)
+-- 
+2.14.2
+
