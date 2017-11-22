@@ -396,6 +396,8 @@ class MesonBuilder(object):
         self._compiler = compiler
         self._install = install
         self._extra_definitions = extra_definitions or []
+        self.tests = [] # List of tests to run
+        self.gtests = [] 
 
         project = self._project_map.current_project()
 
@@ -405,7 +407,7 @@ class MesonBuilder(object):
             self._src_dir, '_'.join(['build', project, self._options.arch]))
 
     def build(self):
-        if not os.path.exists(self._src_dir + "/meson.build"):
+        if not os.path.exists(os.path.join(self._src_dir, "meson.build")):
             return
         env = {
             'PKG_CONFIG_PATH': get_package_config_path(),
@@ -445,7 +447,69 @@ class MesonBuilder(object):
         Export().export()
 
     def test(self):
-        return
+        if not os.path.exists(os.path.join(self._src_dir, "meson.build")):
+            return
+        results_dir = os.path.abspath(os.path.join(
+            self._project_map.build_root(), "../test"))
+        if not os.path.exists(results_dir):
+            os.makedirs(results_dir)
+
+        root = et.Element('testsuites')
+        suite = et.SubElement(
+            root,
+            'testsuite',
+            name=self._project_map.current_project(),
+            tests=str(len(self.tests)))
+
+        for args in self.tests:
+            if isinstance(args, list):
+                name = args[0]
+            else:
+                name = args
+                args = [args]
+
+            p = subprocess.Popen(
+                ['meson', 'test', '-v', '-C', self._build_dir] + args,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = p.communicate()
+            case = et.SubElement(
+                suite,
+                'testcase',
+                classname="unittest",
+                name=name,
+                time="0") # TODO
+            o = et.SubElement(case, 'system-out')
+            o.text = out
+            e = et.SubElement(case, 'system-err')
+            e.text = err
+            if p.returncode != 0:
+                et.SubElement(case, 'failure')
+
+        filename = os.path.join(
+            results_dir,
+            '_'.join(['unittest', self._options.config, self._options.arch,
+                      self._options.hardware]) + '.xml')
+        tree = et.ElementTree(root)
+        tree.write(filename, encoding='utf-8', xml_declaration=True)
+
+        for name in self.gtests:
+            filename = os.path.join(
+                results_dir,
+                '_'.join(['gtest', name, self._options.config,
+                          self._options.arch, self._options.hardware]) + '.xml')
+            try:
+                run_batch_command(['meson', 'test', '-C', self._build_dir, name,
+                                   '--test-args',
+                                   '"--gtest_output=xml:{}"'.format(filename)])
+            except subprocess.CalledProcessError:
+                Export().create_failing_test(
+                    'failing-gtest-{}'.format(name),
+                    'WARN: gtest returned non-zero status: {}'.format(name))
+            else:
+                if not os.path.exists(filename):
+                    Export().create_failing_test(
+                        'silent-gtest-{}'.format(name),
+                        'ERROR: gtest produced no output: {}'.format(name))
 
     def clean(self):
         git_clean(self._src_dir)
