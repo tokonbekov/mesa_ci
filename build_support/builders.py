@@ -82,19 +82,28 @@ def cpu_count():
         cpus = 18
     return cpus
 
-def get_package_config_path():
-    lib_dir = ""
-    if Options().arch == "m32":
-        lib_dir = "i386-linux-gnu"
-    else:
-        lib_dir = "x86_64-linux-gnu"
 
+def _system_dirs():
+    """Returns the correct lib prefix for debian vs non-debian."""
+    if Options().arch == "m32":
+        lib_dirs = ["lib32"]
+        if os.path.exists('/etc/debian_version'):
+            lib_dirs += "lib/i386-linux-gnu"
+    else:
+        lib_dirs = ["lib", "lib64"]
+        if os.path.exists('/etc/debian_version'):
+            lib_dirs += "lib/x86_64-linux-gnu"
+    return lib_dirs
+
+
+def get_package_config_path():
+    lib_dirs = _system_dirs()
     build_root = ProjectMap().build_root()
-    pkg_config_path = build_root + "/lib/" + lib_dir + "/pkgconfig:" + \
-                      build_root + "/lib/pkgconfig:" + \
-                      "/usr/lib/"+ lib_dir + "/pkgconfig:" + \
-                      "/usr/lib/pkgconfig"
-    return pkg_config_path
+    return ':'.join(
+        [os.path.join(build_root, l, 'pkgconfig') for l in lib_dirs] +
+        [os.path.join('/usr', l, 'pkgconfig') for l in lib_dirs] +
+        ["/usr/lib/pkgconfig"])
+
 
 def delete_src_pyc(path):
     for dirpath, _, filenames in os.walk(path):
