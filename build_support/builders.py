@@ -401,7 +401,8 @@ class MesonBuilder(object):
 
         self._src_dir = self._project_map.project_source_dir(project)
         self._build_root = self._project_map.build_root()
-        self._build_dir = os.path.join(self._src_dir, "build_" + self._options.arch)
+        self._build_dir = os.path.join(
+            self._src_dir, '_'.join(['build', project, self._options.arch]))
 
     def build(self):
         if not os.path.exists(self._src_dir + "/meson.build"):
