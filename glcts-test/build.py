@@ -20,11 +20,8 @@ class GLCTSList(object):
 
     def tests(self, env=None):
         br = self.pm.build_root()
-        libdir = "x86_64-linux-gnu"
-        if self.o.arch == "m32":
-            libdir = "i386-linux-gnu"
         env = {"MESA_GLES_VERSION_OVERRIDE" : "3.2",
-               "LD_LIBRARY_PATH" : br + "/lib",
+               "LD_LIBRARY_PATH" : get_libdir(),
                "LIBGL_DRIVERS_PATH" : br + "/lib/dri",
                "MESA_GL_VERSION_OVERRIDE" : "4.6",
                "MESA_GLSL_VERSION_OVERRIDE" : "460"}
