@@ -58,10 +58,10 @@ def mesa_version():
     env = {
         'LD_LIBRARY_PATH': ':'.join([
             get_libdir(),
-            os.path.join(get_libdir(), 'dri'),
+            get_libgl_drivers(),
             os.path.join(br, 'lib', 'piglit', 'lib'),
         ]),
-        "LIBGL_DRIVERS_PATH": os.path.join(br, "lib/dri"),
+        "LIBGL_DRIVERS_PATH": get_libgl_drivers(),
     }
     (out, _) = run_batch_command([wflinfo,
                                  "--platform=gbm", "-a", "gl"],
@@ -103,6 +103,15 @@ def get_package_config_path():
         [os.path.join(build_root, l, 'pkgconfig') for l in lib_dirs] +
         [os.path.join('/usr', l, 'pkgconfig') for l in lib_dirs] +
         ["/usr/lib/pkgconfig"])
+
+
+def get_libgl_drivers():
+    """Get the correct drivers dir depending on platform and arch."""
+    lib_dirs = _system_dirs()
+    build_root = ProjectMap().build_root()
+    return ':'.join(
+        [os.path.join(build_root, l, 'dri') for l in lib_dirs] +
+        [os.path.join('/usr', l, 'dri') for l in lib_dirs])
 
 
 def get_libdir():
@@ -461,7 +470,7 @@ class PiglitTester(object):
                 os.path.join(get_libdir(), 'dri'),
                 os.path.join(self.build_root, 'lib', 'piglit', 'lib'),
             ]),
-            "LIBGL_DRIVERS_PATH": os.path.join(self.build_root, "lib/dri"),
+            "LIBGL_DRIVERS_PATH": get_libgl_drivers(),
              # fixes dxt subimage tests that fail due to a
              # combination of unreasonable tolerances and possibly
              # bugs in debian's s2tc library.  Recommended by nroberts

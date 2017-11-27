@@ -10,6 +10,7 @@ import xml.etree.cElementTree as et
 import xml.sax.saxutils as saxutils
 
 from . import *
+from .builders import get_libdir, get_libgl_drivers
 
 class DeqpTrie:
     def __init__(self):
@@ -427,7 +428,7 @@ class DeqpTester:
             env = {}
         build_root = self.pm.build_root()
         base_env = { "LD_LIBRARY_PATH" : get_libdir(),
-                     "LIBGL_DRIVERS_PATH" : build_root + "/lib/dri",
+                     "LIBGL_DRIVERS_PATH" : get_libgl_drivers(),
                      "INTEL_PRECISE_TRIG" : "1",
 
                      # without this, Xorg limits frame rate to 1 FPS
@@ -705,7 +706,7 @@ class CtsTestList(object):
         if env is None:
             env = {"MESA_GLES_VERSION_OVERRIDE" : "3.2",
                    "LD_LIBRARY_PATH": get_libdir(),
-                   "LIBGL_DRIVERS_PATH" : br + "/lib/dri"}
+                   "LIBGL_DRIVERS_PATH" : get_libgl_drivers()}
             self.o.update_env(env)
         save_override = env["MESA_GLES_VERSION_OVERRIDE"]
         env["MESA_GLES_VERSION_OVERRIDE"] = "3.2"
