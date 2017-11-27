@@ -425,7 +425,10 @@ class MesonBuilder(object):
         returnto = os.getcwd()
         os.chdir(self._src_dir)
 
-        run_batch_command(['meson', self._build_dir, '--prefix', self._build_root] +
+        # Set libdir to make deqp happy on debian, since otherwise the GLES
+        # header dedection will fail.
+        run_batch_command(['meson', self._build_dir, '--prefix', self._build_root,
+                           '--libdir', 'lib32' if self._options.arch == 'm32' else 'lib'] +
                           self._extra_definitions, env=env)
         run_batch_command(['ninja', '-j', str(cpu_count()), '-C', self._build_dir])
         if self._install:
