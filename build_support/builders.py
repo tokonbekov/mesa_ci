@@ -176,11 +176,12 @@ def check_gpu_hang(identify_test=True):
 class AutoBuilder(object):
 
     def __init__(self, o=None, configure_options=None, export=True,
-                 opt_flags=""):
+                 opt_flags="", install=True):
         self._options = o
         self._tests = None
         self._export = export
         self._opt_flags = opt_flags
+        self.install = install
 
         self._configure_options = configure_options
         if not configure_options:
@@ -235,7 +236,9 @@ class AutoBuilder(object):
 
         run_batch_command(["make",  "-j", 
                            str(cpu_count())], env=self._env)
-        run_batch_command(["make",  "install"])
+        if self.install:
+            run_batch_command(["make",  '-j', str(cpu_count()), "install"],
+                              env=self._env)
 
         os.chdir(savedir)
 
