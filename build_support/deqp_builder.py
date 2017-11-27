@@ -426,14 +426,9 @@ class DeqpTester:
         if env == None:
             env = {}
         build_root = self.pm.build_root()
-        libdir = "x86_64-linux-gnu"
-        if self.o.arch == "m32":
-            libdir = "i386-linux-gnu"
-        base_env = { "LD_LIBRARY_PATH" : build_root + "/lib:" + \
-                     build_root + "/lib/" + libdir + ":" + build_root + "/lib/dri",
+        base_env = { "LD_LIBRARY_PATH" : get_libdir(),
                      "LIBGL_DRIVERS_PATH" : build_root + "/lib/dri",
                      "INTEL_PRECISE_TRIG" : "1",
-                     "GBM_DRIVERS_PATH" : build_root + "/lib/dri",
 
                      # without this, Xorg limits frame rate to 1 FPS
                      # when display sleeps, cratering tests execution
@@ -708,12 +703,8 @@ class CtsTestList(object):
         cts_dir = os.path.dirname(self.binary)
         os.chdir(cts_dir)
         if env is None:
-            libdir = "x86_64-linux-gnu"
-            if self.o.arch == "m32":
-                libdir = "i386-linux-gnu"
             env = {"MESA_GLES_VERSION_OVERRIDE" : "3.2",
-                   "LD_LIBRARY_PATH" : br + "/lib:" + \
-                   br + "/lib/" + libdir + ":" + br + "/lib/dri",
+                   "LD_LIBRARY_PATH": get_libdir(),
                    "LIBGL_DRIVERS_PATH" : br + "/lib/dri"}
             self.o.update_env(env)
         save_override = env["MESA_GLES_VERSION_OVERRIDE"]

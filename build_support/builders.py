@@ -54,14 +54,14 @@ from . import NoConfigFile
 
 def mesa_version():
     br = ProjectMap().build_root()
-    libdir = "x86_64-linux-gnu"
-    if Options().arch == "m32":
-        libdir = "i386-linux-gnu"
     wflinfo =  br + "/bin/wflinfo"
-    env = { "LD_LIBRARY_PATH" : br + "/lib:" + br + "/lib/" + libdir + ":" + br + "/lib/dri:" + br + "/lib/piglit/lib",
-
-                "LIBGL_DRIVERS_PATH" : br + "/lib/dri",
-            "GBM_DRIVERS_PATH" : br + "/lib/dri"
+    env = {
+        'LD_LIBRARY_PATH': ':'.join([
+            get_libdir(),
+            os.path.join(get_libdir(), 'dri'),
+            os.path.join(br, 'lib', 'piglit', 'lib'),
+        ]),
+        "LIBGL_DRIVERS_PATH": os.path.join(br, "lib/dri"),
     }
     (out, _) = run_batch_command([wflinfo,
                                  "--platform=gbm", "-a", "gl"],
@@ -85,14 +85,14 @@ def cpu_count():
 
 def _system_dirs():
     """Returns the correct lib prefix for debian vs non-debian."""
+    lib_dirs = ['lib']
     if Options().arch == "m32":
-        lib_dirs = ["lib32"]
         if os.path.exists('/etc/debian_version'):
-            lib_dirs += "lib/i386-linux-gnu"
+            lib_dirs.append("lib/i386-linux-gnu")
     else:
-        lib_dirs = ["lib", "lib64"]
+        lib_dirs.append("lib64")
         if os.path.exists('/etc/debian_version'):
-            lib_dirs += "lib/x86_64-linux-gnu"
+            lib_dirs.append("lib/x86_64-linux-gnu")
     return lib_dirs
 
 
@@ -103,6 +103,15 @@ def get_package_config_path():
         [os.path.join(build_root, l, 'pkgconfig') for l in lib_dirs] +
         [os.path.join('/usr', l, 'pkgconfig') for l in lib_dirs] +
         ["/usr/lib/pkgconfig"])
+
+
+def get_libdir():
+    """Get the correct libdir depending on platform and arch."""
+    lib_dirs = _system_dirs()
+    build_root = ProjectMap().build_root()
+    return ':'.join(
+        [os.path.join(build_root, l) for l in lib_dirs] +
+        [os.path.join('/usr', l) for l in lib_dirs])
 
 
 def delete_src_pyc(path):
@@ -181,7 +190,7 @@ def check_gpu_hang(identify_test=True):
         print "sleeping to allow reboot job to be scheduled."
         time.sleep(120)
     return True
-        
+
 class AutoBuilder(object):
 
     def __init__(self, o=None, configure_options=None, export=True,
@@ -236,12 +245,18 @@ class AutoBuilder(object):
         os.chdir(self._src_dir)
         run_batch_command(["autoreconf", "--verbose", "--install", "-s"], env=self._env)
         os.chdir(self._build_dir)
+
+        env = self._env.copy()
+        env.update({
+            "PKG_CONFIG_PATH": pkg_config,
+            "LD_LIBRARY_PATH": get_libdir(),
+            "CC": "ccache gcc -" + self._options.arch,
+            "CXX": "ccache g++ -" + self._options.arch,
+        })
+
         run_batch_command([self._src_dir + "/configure", 
-                           "PKG_CONFIG_PATH=" + pkg_config, 
-                           "CC=ccache gcc -" + self._options.arch, 
-                           "CXX=ccache g++ -" + self._options.arch, 
                            "--prefix=" + self._build_root] + \
-                          flags + self._configure_options, env=self._env)
+                          flags + self._configure_options, env=env)
 
         run_batch_command(["make",  "-j", 
                            str(cpu_count())], env=self._env)
@@ -310,23 +325,19 @@ class CMakeBuilder(object):
         pkg_config = get_package_config_path()
         savedir = os.getcwd()
         os.chdir(self._build_dir)
-
-        cflag = "-m32"
-        cxxflag = "-m32"
-        if self._options.arch == "m64":
-            cflag = "-m64"
-            cxxflag = "-m64"
-        env={"PKG_CONFIG_PATH" : pkg_config,
-             "CC":"ccache gcc",
-             "CXX":"ccache g++",
-             "CFLAGS":cflag,
-             "CXXFLAGS":cxxflag}
-        if self._compiler == "clang":
-            env={"PKG_CONFIG_PATH" : pkg_config,
-                 "CC":"clang",
-                 "CXX":"clang++",
-                 "CFLAGS":cflag,
-                 "CXXFLAGS":cxxflag}
+        env = {
+            'PKG_CONFIG_PATH': get_package_config_path(),
+            'CC': 'ccache {}'.format('gcc' if self._compiler != 'clang' else 'clang'),
+            'CXX': 'ccache {}'.format('g++' if self._compiler != 'clang' else 'clang++'),
+            'CFLAGS': '-m64' if self._options.arch == 'm64' else '-m32',
+            'CXXFLAGS': '-m64' if self._options.arch == 'm64' else '-m32',
+            # Meson does not set an rpath by default, that is project
+            # decicision (CMake does the same, but Autotools does set rpath by
+            # default). To work around this for projects (like mesa) that
+            # don't, we set the LD_LIBRARY_PATH, This avoids problems like
+            # libEGL trying to open an older system libgm.
+           'LD_LIBRARY_PATH': get_libdir(),
+        }
         self._options.update_env(env)
         run_batch_command(["cmake", "-GNinja", self._src_dir, 
                            "-DCMAKE_INSTALL_PREFIX:PATH=" + self._build_root] \
@@ -388,10 +399,16 @@ class MesonBuilder(object):
             return
         env = {
             'PKG_CONFIG_PATH': get_package_config_path(),
-            'CC': 'gcc' if self._compiler != 'clang' else 'clang',
-            'CXX': 'g++' if self._compiler != 'clang' else 'clang++',
+            'CC': 'ccache {}'.format('gcc' if self._compiler != 'clang' else 'clang'),
+            'CXX': 'ccache {}'.format('g++' if self._compiler != 'clang' else 'clang++'),
             'CFLAGS': '-m64' if self._options.arch == 'm64' else '-m32',
             'CXXFLAGS': '-m64' if self._options.arch == 'm64' else '-m32',
+            # Meson does not set an rpath by default, that is project
+            # decicision (CMake does the same, but Autotools does set rpath by
+            # default). To work around this for projects (like mesa) that
+            # don't, we set the LD_LIBRARY_PATH, This avoids problems like
+            # libEGL trying to open an older system libgm.
+           'LD_LIBRARY_PATH': get_libdir(),
         }
         self._options.update_env(env)
 
@@ -438,27 +455,26 @@ class PiglitTester(object):
 
         pm = ProjectMap()
         self.build_root = pm.build_root()
-        libdir = "x86_64-linux-gnu"
-        if o.arch == "m32":
-            libdir = "i386-linux-gnu"
-        self.env = { "LD_LIBRARY_PATH" : self.build_root + "/lib:" + \
-                     self.build_root + "/lib/" + libdir + ":" + \
-                     self.build_root + "/lib/dri:" + \
-                     self.build_root + "/lib/piglit/lib",
+        self.env = {
+            'LD_LIBRARY_PATH': ':'.join([
+                get_libdir(),
+                os.path.join(get_libdir(), 'dri'),
+                os.path.join(self.build_root, 'lib', 'piglit', 'lib'),
+            ]),
+            "LIBGL_DRIVERS_PATH": os.path.join(self.build_root, "lib/dri"),
+             # fixes dxt subimage tests that fail due to a
+             # combination of unreasonable tolerances and possibly
+             # bugs in debian's s2tc library.  Recommended by nroberts
+             "S2TC_DITHER_MODE" : "NONE",
 
-                     "LIBGL_DRIVERS_PATH" : self.build_root + "/lib/dri",
-                     "GBM_DRIVERS_PATH" : self.build_root + "/lib/dri",
-                     # fixes dxt subimage tests that fail due to a
-                     # combination of unreasonable tolerances and possibly
-                     # bugs in debian's s2tc library.  Recommended by nroberts
-                     "S2TC_DITHER_MODE" : "NONE",
+             # In the event of a piglit related bug, we want the backtrace
+             "PIGLIT_DEBUG": "1",
 
-                     # In the event of a piglit related bug, we want the backtrace
-                     "PIGLIT_DEBUG": "1",
-
-                     # Set the path to include buildroot/bin so fast skipping works
-                     'PATH': '{}:{}'.format(os.path.join(self.build_root, 'bin'),
-                                            os.environ['PATH'])
+             # Set the path to include buildroot/bin so fast skipping works
+             'PATH': ':'.join([
+                 os.path.join(self.build_root, 'bin'),
+                 os.environ['PATH'],
+             ]),
         }
         if "hsw" in o.hardware or "byt" in o.hardware or "ivb" in o.hardware:
             self.env["MESA_GLES_VERSION_OVERRIDE"] = "3.1"
