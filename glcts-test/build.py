@@ -21,8 +21,8 @@ class GLCTSList(object):
     def tests(self, env=None):
         br = self.pm.build_root()
         env = {"MESA_GLES_VERSION_OVERRIDE" : "3.2",
-               "LD_LIBRARY_PATH" : get_libdir(),
-               "LIBGL_DRIVERS_PATH" : br + "/lib/dri",
+               "LD_LIBRARY_PATH" : bs.get_libdir(),
+               "LIBGL_DRIVERS_PATH" : bs.get_libgl_drivers(),
                "MESA_GL_VERSION_OVERRIDE" : "4.6",
                "MESA_GLSL_VERSION_OVERRIDE" : "460"}
         self.o.update_env(env)
