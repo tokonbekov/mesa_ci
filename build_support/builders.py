@@ -532,7 +532,10 @@ class PiglitTester(object):
                
                # fails intermittently on g45, fails reliably on all
                # others.  Test introduced Oct 2014
-               "--exclude-tests", "vs-float-main-return"]
+               "--exclude-tests", "vs-float-main-return",
+
+               # fails intermittently
+               "--exclude-tests", "arb_shader_clock.execution.clock"]
 
         if os.path.exists(conf_file):
             cmd = cmd + ["--config", conf_file]
