@@ -40,7 +40,7 @@ def main():
     parser.add_argument('--arch', dest='arch', type=str, 
                         default='m64', choices=['m64', 'm32'],
                         help='arch to build. (default: %(default)s)')
-    parser.add_argument('--config', type=str, default="release", 
+    parser.add_argument('--config', type=str, default="debug",
                         choices=['release', 'debug'],
                         help="Release or Debug build. (default: %(default)s)")
 
