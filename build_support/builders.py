@@ -427,7 +427,7 @@ class MesonBuilder(object):
 
         run_batch_command(['meson', self._build_dir, '--prefix', self._build_root] +
                           self._extra_definitions, env=env)
-        run_batch_command(['ninja', '-C', self._build_dir])
+        run_batch_command(['ninja', '-j', str(cpu_count()), '-C', self._build_dir])
         if self._install:
             print "Installing: output suppressed"
             run_batch_command(['ninja', '-C', self._build_dir, 'install'],
