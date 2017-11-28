@@ -45,7 +45,9 @@ class DeqpTrie:
 
         for line in fh.readlines():
             line = line.strip()
-            self.add_line(line)
+            # Ignore comment lines
+            if not line.startswith('#'):
+                self.add_line(line)
 
     def add_line(self, line):
         self._add_split_line(line.split("."))
