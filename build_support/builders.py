@@ -411,8 +411,6 @@ class MesonBuilder(object):
             'PKG_CONFIG_PATH': get_package_config_path(),
             'CC': 'ccache {}'.format('gcc' if self._compiler != 'clang' else 'clang'),
             'CXX': 'ccache {}'.format('g++' if self._compiler != 'clang' else 'clang++'),
-            'CFLAGS': '-m64' if self._options.arch == 'm64' else '-m32',
-            'CXXFLAGS': '-m64' if self._options.arch == 'm64' else '-m32',
             # Meson does not set an rpath by default, that is project
             # decicision (CMake does the same, but Autotools does set rpath by
             # default). To work around this for projects (like mesa) that
@@ -427,9 +425,15 @@ class MesonBuilder(object):
 
         # Set libdir to make deqp happy on debian, since otherwise the GLES
         # header dedection will fail.
+        if self._options.arch == 'm32':
+            cross_file = ['--cross-file', os.path.join(
+                os.path.dirname(__file__),
+                'x86-linux-gcc.cross' if self._compiler != 'clang' else 'x86-linux-clang.cross')]
+        else:
+            cross_file = []
         run_batch_command(['meson', self._build_dir, '--prefix', self._build_root,
-                           '--libdir', 'lib32' if self._options.arch == 'm32' else 'lib'] +
-                          self._extra_definitions, env=env)
+                           '--libdir', 'lib'] + cross_file + self._extra_definitions,
+                           env=env)
         run_batch_command(['ninja', '-j', str(cpu_count()), '-C', self._build_dir])
         if self._install:
             print "Installing: output suppressed"
