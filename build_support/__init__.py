@@ -144,6 +144,9 @@ def build(builder, options=None, time_limit=None, import_build=True):
 
         try:
             a()
+            if k == "test" and "CACHE_DISABLE" in options.env:
+                print("Running a second time to test shader cache!")
+                a()
         except:
             # we need to cancel the timer first, in case
             # set_status fails, and the timer is left running
