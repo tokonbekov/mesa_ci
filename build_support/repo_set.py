@@ -318,7 +318,11 @@ class RepoSet:
             repo = self.repo(project)
             # branches can be long-lived: eg mesa_10.4.  300 commits
             # on the branch is long enough for 10.4
-            branch_commits = [commit.hexsha for commit in repo.iter_commits(max_count=1200)]
+            try:
+                branch_commits = [commit.hexsha for commit in repo.iter_commits(max_count=1200)]
+            except:
+                print("Warning: Unable to find commit in " + project + ", make sure your repos are up to date!")
+                continue
             tmp_revs = []
 
             # branchs can be a long time in the past.  For 10.4, there
