@@ -158,7 +158,7 @@ def is_build_lab():
 class RepoSet:
     """this class represents the set of git repositories which are
     specified in the build_specification.xml file."""
-    def __init__(self, clone=False):
+    def __init__(self, clone=False, cached_only=False):
         buildspec = ProjectMap().build_spec()
         self._repos = {}
         # key is project, value is dictionary of remote name => remote object
@@ -182,6 +182,9 @@ class RepoSet:
         if build_lab:
             attempts = 10
 
+        buildspec = ProjectMap().build_spec()
+        master_host = buildspec.find("build_master").attrib["hostname"]
+
         # fetch all the repos into _repo_dir
         for tag in repos:
             project = tag.tag
@@ -191,6 +194,9 @@ class RepoSet:
             branch = "origin/master"
             if tag.attrib.has_key("branch"):
                 branch = tag.attrib["branch"]
+            if cached_only and master_host not in url:
+                print("Skipping non-cached remote")
+                continue
 
             # prohibit double entry
             assert not self._repos.has_key(project)
@@ -422,7 +428,7 @@ class RepoStatus:
         self._cached_only = cached_only
 
         # key is project, value is repo object
-        self._repos = RepoSet()
+        self._repos = RepoSet(cached_only=self._cached_only)
 
         # referencing the HEAD of an unfetched remote will fail.  This
         # happens the first time branches are polled
