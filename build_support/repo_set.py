@@ -260,9 +260,12 @@ class RepoSet:
         if os.name != "nt":
             signal.alarm(secs)   # 5 minutes
 
-    def fetch(self):
+    def fetch(self, cached_only=False):
         def signal_handler(signum, frame):
             raise TimeoutException("Fetch timed out.")
+
+        buildspec = ProjectMap().build_spec()
+        master_host = buildspec.find("build_master").attrib["hostname"]
 
         for repo in self._repos.values():
             garbage_collection_fail = repo.working_tree_dir + "/.git/gc.log"
@@ -277,6 +280,9 @@ class RepoSet:
             if os.name != "nt":
                 signal.signal(signal.SIGALRM, signal_handler)
             for remote in repo.remotes:
+                if cached_only and master_host not in remote.url:
+                    print("Skipping non-cached remote")
+                    continue
                 print "fetching " + remote.url
                 # 4 attempts
                 success = False
@@ -407,11 +413,13 @@ class RevisionSpecification:
         return self._revisions[project]
 
 class RepoStatus:
-    def __init__(self, buildspec=None):
+    def __init__(self, buildspec=None, cached_only=False):
         if not buildspec:
             buildspec = ProjectMap().build_spec()
         if type(buildspec) == str or type(buildspec) == unicode:
             buildspec = et.parse(buildspec)
+
+        self._cached_only = cached_only
 
         # key is project, value is repo object
         self._repos = RepoSet()
@@ -420,7 +428,7 @@ class RepoStatus:
         # happens the first time branches are polled
         # after. build_specification.xml has been updated to add a
         # remote.
-        self._repos.fetch()
+        self._repos.fetch(self._cached_only)
 
         self._branches = []
 
@@ -437,7 +445,7 @@ class RepoStatus:
     def poll(self):
         """returns list of branches that should be triggered"""
         ret_dict = {}
-        self._repos.fetch()
+        self._repos.fetch(self._cached_only)
         for branch in self._branches:
             trigger_commit = branch.needs_build()
             if trigger_commit:
