@@ -63,7 +63,7 @@ def main():
             print("Build Specification updated", file=sys.stderr)
             sys.stderr.flush()
         new_spec_hash = file_checksum(spec_file)
-        status = bs.RepoStatus()
+        status = bs.RepoStatus(cached_only=True)
         while new_spec_hash == orig_spec_hash:
             branches = status.poll()
             sys.stderr.flush()
