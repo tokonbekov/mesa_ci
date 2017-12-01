@@ -185,6 +185,10 @@ def main():
                         "(default: %(default)s)")
     parser.add_argument("--tar", help="generate tar for email notification",
                         action="store_true")
+    parser.add_argument('--results_subdir', type=str, default="",
+                        help="Subdirectory under results_dir to place results."
+                        " Use this to prevent conflicts when running"
+                        "multiple concurrent tests on the same branch.")
 
     args = parser.parse_args()
     projects = []
@@ -193,6 +197,7 @@ def main():
     branch = args.branch
     revision = args.revision
     rebuild = args.rebuild
+    results_subdir = args.results_subdir or branch
 
     # some build_local params are not handled by the Options, which is
     # used by other modules.  This code strips out incompatible args
@@ -227,7 +232,7 @@ def main():
     # create a result_path that is unique for this set of builds
     spec_xml = pm.build_spec()
     results_dir = spec_xml.find("build_master").attrib["results_dir"]
-    result_path = "/".join([results_dir, branch, hashstr, o.type])
+    result_path = "/".join([results_dir, results_subdir, hashstr, o.type])
     o.result_path = result_path
 
     if rebuild == "true" and os.path.exists(result_path):
