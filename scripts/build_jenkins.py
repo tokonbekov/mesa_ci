@@ -160,6 +160,21 @@ def collate_tests(result_path, out_test_dir, make_tar=False):
             fh.close()
         time.sleep(10)
 
+    tc = bs.TestLister(out_test_dir + "/test", include_passes=True)
+    all_tests = len(tc.Tests())
+
+    failed_tests = 0
+    tf = bs.TestLister(out_test_dir + "/test")
+    failed_tests = len(tf.Tests())
+    passed_tests = all_tests - failed_tests
+    percent = (passed_tests*100) / all_tests
+    percentage = format(percent, '.2f')
+    if all_tests:
+        with open("test_summary.txt", "a") as fh:
+            fh.write("""
+
+    Tests passed: {} / {} ({}%)
+            """.format(passed_tests,all_tests,percentage)     )
 
 def main():
     # reuse the options from the gasket
