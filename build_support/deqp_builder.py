@@ -633,7 +633,7 @@ class DeqpTester:
                 if not current_test:
                     continue
                 
-                blob.append(line)
+                blob.append(line.decode('utf-8','ignore').encode('utf-8'))
             if current_test:
                 # crashed
                 results_trie.add_qpa_blob(current_test.split("."), blob, pid, err)
