@@ -992,6 +992,7 @@ class CtsBuilder(CMakeBuilder):
                 run_batch_command(["git", "am", patch])
             except:
                 print "WARN: failed to apply patch: " + patch
+                run_batch_command(["git", "am", "--abort"])
             
         if not os.path.exists(self._build_dir):
             os.makedirs(self._build_dir)
