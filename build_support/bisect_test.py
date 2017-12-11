@@ -665,14 +665,16 @@ class DeqpTest:
         self.test_name = ".".join(full_test_name.split(".")[:-1])
         self.status = status
         self._retest_path = retest_path
-        self.project = "glescts-test"
+        self.project = None
         if "dEQP-VK" in self.test_name:
             self.project = "vulkancts-test"
-        if "dEQP-GL" in self.test_name:
+        elif "dEQP-GL" in self.test_name:
             self.project = "deqp-test"
-        if "dEQP-EGL" in self.test_name:
+        elif "dEQP-EGL" in self.test_name:
             self.project = "deqp-test"
-        if "KHR-GL46" in self.test_name:
+        elif "KHR-GLES" in self.test_name:
+            self.project = "glescts-test"
+        elif "KHR-GL" in self.test_name:
             self.project = "glcts-test"
 
         hwarch = full_test_name.split(".")[-1]
