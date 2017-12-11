@@ -986,7 +986,7 @@ class CtsBuilder(CMakeBuilder):
             os.symlink("../../spirvheaders", spirvheaders)
 
         # apply patches if they exist
-        for patch in glob.glob(pm.project_build_dir() + "/*.patch"):
+        for patch in sorted(glob.glob(pm.project_build_dir() + "/*.patch")):
             os.chdir(self._src_dir)
             try:
                 run_batch_command(["git", "am", patch])
