@@ -41,7 +41,10 @@ from . import BuildFailure
 
 
 class NoConfigFile(Exception):
-    pass
+    def __str__(self):
+        return ("ERROR: No conf file found. Please create a conf for this "
+                "hardware platform under <mesa_jenkins>/<test>/<hardware>."
+                "conf")
 
 
 def get_conf_file(hardware, arch, project="piglit-test"):
