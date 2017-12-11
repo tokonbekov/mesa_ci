@@ -30,13 +30,18 @@ class DeqpTrie:
         running_count += len(self._result)
         return running_count
 
-    def test_count(self, running_count = 0):
+    def test_count(self, running_count = None):
         if not self._trie:
-            return running_count + 1
+            if running_count is None:
+                return 0
+            else:
+                return running_count + 1
+        if running_count is None:
+            running_count = 0
         for _,v in iter(self._trie.items()):
             running_count = v.test_count(running_count)
         return running_count
-    
+
     def add_txt(self, txt_file):
         fh = None
         if (txt_file[-4:] == ".bz2"):
@@ -132,6 +137,19 @@ class DeqpTrie:
         for child in tag:
             self._trie[name]._add_tag(child)
 
+    def _filter(self, blacklist):
+        ### recursive step
+        if not blacklist._trie and self._trie:
+            # caller is filtering out a group of tests with a common
+            # prefix.
+            self._trie = {}
+        for group in blacklist._trie.keys():
+            if group not in self._trie:
+                continue
+            self._trie[group]._filter(blacklist._trie[group])
+            if len(self._trie[group]._trie) == 0:
+                del(self._trie[group])
+
     def filter(self, blacklist):
         # blacklist can either be a trie or a list of tests
         if list == type(blacklist):
@@ -141,17 +159,9 @@ class DeqpTrie:
             for test in blacklist:
                 bltrie.add_line(test)
             blacklist = bltrie
-        
-        if not blacklist._trie and self._trie:
-            # caller is filtering out a group of tests with a common
-            # prefix.
-            self._trie = {}
-        for group in blacklist._trie.keys():
-            if group not in self._trie:
-                continue
-            self._trie[group].filter(blacklist._trie[group])
-            if len(self._trie[group]._trie) == 0:
-                del(self._trie[group])
+        if blacklist.test_count() == 0:
+            return
+        self._filter(blacklist)
 
     def filter_whitelist(self, whitelist, prefix=""):
         if "*" in whitelist._trie:
@@ -751,16 +761,17 @@ class CtsTestList(object):
         project = self.pm.current_project()
         blacklist_dir = self.pm.project_build_dir(project) + "/"
         blacklist = DeqpTrie()
-        blacklist_file = blacklist_dir + self.o.hardware + self.o.arch + "_blacklist.txt"
-        if os.path.exists(blacklist_file):
-            blacklist.add_txt(blacklist_file)
-        blacklist_file = blacklist_dir + self.o.hardware + "_blacklist.txt"
-        if os.path.exists(blacklist_file):
-            blacklist.add_txt(blacklist_file)
-        blacklist_file = blacklist_dir + self.o.hardware[:3] + "_blacklist.txt"
-        if os.path.exists(blacklist_file):
-            blacklist.add_txt(blacklist_file)
-        all_tests.filter(blacklist)
+
+        blacklist_files = [ blacklist_dir + self.o.hardware + self.o.arch + "_blacklist.txt",
+                            blacklist_dir + self.o.hardware + "_blacklist.txt",
+                            blacklist_dir + self.o.hardware[:3] + "_blacklist.txt" ]
+
+        for blacklist_file in blacklist_files:
+            if os.path.exists(blacklist_file):
+                blacklist.add_txt(blacklist_file)
+            if blacklist.test_count():
+                all_tests.filter(blacklist)
+
         if not self.version:
             self.version = mesa_version()
         unsupported = []
