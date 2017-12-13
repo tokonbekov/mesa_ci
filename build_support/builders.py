@@ -940,24 +940,24 @@ class CtsBuilder(CMakeBuilder):
     def build(self):
         pm = ProjectMap()
 
-        spirvtools = self._src_dir + "/external/spirv-tools"
+        spirvtools = self._src_dir + "/external/spirv-tools/src"
         if not os.path.islink(spirvtools):
             rmtree(spirvtools)
         if not os.path.exists(spirvtools):
-            os.symlink("../../spirvtools", spirvtools)
-        glslang = self._src_dir + "/external/glslang"
+            os.symlink("../../../spirvtools", spirvtools)
+        glslang = self._src_dir + "/external/glslang/src"
         if not os.path.islink(glslang):
             rmtree(glslang)
         if not os.path.exists(glslang):
-            os.symlink("../../glslang", glslang)
+            os.symlink("../../../glslang", glslang)
         spirvheaders_dir = self._src_dir + "/external/spirv-headers"
         if not os.path.exists(spirvheaders_dir):
             os.makedirs(spirvheaders_dir)
-        spirvheaders = spirvheaders_dir
+        spirvheaders = self._src_dir + "/external/spirv-headers/src"
         if not os.path.islink(spirvheaders):
             rmtree(spirvheaders)
         if not os.path.exists(spirvheaders):
-            os.symlink("../../spirvheaders", spirvheaders)
+            os.symlink("../../../spirvheaders", spirvheaders)
         # change spirv-tools and glslang to use the commits specified
         # in the vulkancts sources
         sys.path = [os.path.abspath(os.path.normpath(s)) for s in sys.path]
@@ -970,7 +970,7 @@ class CtsBuilder(CMakeBuilder):
                     continue
             except:
                 continue
-            repo_path = self._src_dir + "/external/" + package.baseDir
+            repo_path = self._src_dir + "/external/" + package.baseDir + "/src/"
             print "Cleaning: " + repo_path + " : " + package.revision
             savedir = os.getcwd()
             if os.path.exists(repo_path):
@@ -981,9 +981,6 @@ class CtsBuilder(CMakeBuilder):
                 print "Checking out: " + repo_path + " : " + package.revision
                 repo = git.Repo(repo_path)
                 repo.git.checkout(package.revision, force=True)
-        spirvheaders = self._src_dir + "/external/spirv-tools/external/spirv-headers"
-        if not os.path.exists(spirvheaders):
-            os.symlink("../../spirvheaders", spirvheaders)
 
         # apply patches if they exist
         for patch in sorted(glob.glob(pm.project_build_dir() + "/*.patch")):
