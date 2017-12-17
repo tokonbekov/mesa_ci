@@ -27,6 +27,7 @@
 import multiprocessing
 import os
 import re
+import shutil
 import socket
 import subprocess
 import sys
@@ -958,13 +959,32 @@ class CtsBuilder(CMakeBuilder):
             rmtree(spirvheaders)
         if not os.path.exists(spirvheaders):
             os.symlink("../../../spirvheaders", spirvheaders)
+        kc_cts_dir = self._src_dir + "/external/kc-cts"
+        if not os.path.exists(kc_cts_dir):
+            os.mkdir(kc_cts_dir)
+        # Note: for kc-cts, the entire repo is copied since there is at least
+        # one relative #include in this project, which breaks when the repo is
+        # symlinked.
+        kc_cts_src = os.path.join(self._src_dir, "../kc-cts")
+        kc_cts_dest = os.path.join(kc_cts_dir, "src")
+        if os.path.exists(kc_cts_dest):
+            shutil.rmtree(kc_cts_dest)
+        shutil.copytree(kc_cts_src, kc_cts_dest)
         # change spirv-tools and glslang to use the commits specified
         # in the vulkancts sources
         sys.path = [os.path.abspath(os.path.normpath(s)) for s in sys.path]
         sys.path = [gooddir for gooddir in sys.path if "cts" not in gooddir]
         sys.path.append(self._src_dir + "/external/")
         fetch_sources = importlib.import_module("fetch_sources", ".")
-        for package in fetch_sources.PACKAGES:
+        packages = fetch_sources.PACKAGES
+        # kc-cts package uses a different fetch_sources:
+        try:
+            fetch_kc_cts_sources = importlib.import_module("fetch_kc_cts", ".")
+            packages += fetch_kc_cts_sources.PACKAGES
+        except ImportError:
+            fetch_kc_cts_sources = []
+
+        for package in packages:
             try:
                 if not isinstance(package, fetch_sources.GitRepo):
                     continue
@@ -981,6 +1001,8 @@ class CtsBuilder(CMakeBuilder):
                 print "Checking out: " + repo_path + " : " + package.revision
                 repo = git.Repo(repo_path)
                 repo.git.checkout(package.revision, force=True)
+            else:
+                print("WARN: Repo path does not exist: {}".format(repo_path))
 
         # apply patches if they exist
         for patch in sorted(glob.glob(pm.project_build_dir() + "/*.patch")):
@@ -990,7 +1012,7 @@ class CtsBuilder(CMakeBuilder):
             except:
                 print "WARN: failed to apply patch: " + patch
                 run_batch_command(["git", "am", "--abort"])
-            
+
         if not os.path.exists(self._build_dir):
             os.makedirs(self._build_dir)
 
@@ -1008,12 +1030,14 @@ class CtsBuilder(CMakeBuilder):
                "CXXFLAGS":cxxflag,
                "PKG_CONFIG_PATH":get_package_config_path()}
         self._options.update_env(env)
-        
-        run_batch_command(["cmake", "-GNinja", self._src_dir] + self._extra_definitions,
+        kc_cts_target = ""
+        if self._suite == "gl":
+            kc_cts_target = "-DGLCTS_GTF_TARGET=gl"
+
+        run_batch_command(["cmake", "-GNinja", kc_cts_target, self._src_dir] + self._extra_definitions,
                              env=env)
 
         run_batch_command(["ninja","-j" + str(cpu_count())], env=env)
-
         install_dir = pm.build_root() + "/bin/" + self._suite
         binary_dir = self._build_dir + "/external/openglcts/modules"
         run_batch_command(["mkdir", "-p", install_dir])
