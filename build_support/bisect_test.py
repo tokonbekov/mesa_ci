@@ -674,7 +674,7 @@ class DeqpTest:
             self.project = "deqp-test"
         elif "KHR-GLES" in self.test_name:
             self.project = "glescts-test"
-        elif "KHR-GL" in self.test_name:
+        elif "KHR-GL" in self.test_name or "GTF-GL" in self.test_name:
             self.project = "glcts-test"
 
         hwarch = full_test_name.split(".")[-1]
