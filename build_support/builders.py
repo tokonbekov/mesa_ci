@@ -959,17 +959,18 @@ class CtsBuilder(CMakeBuilder):
             rmtree(spirvheaders)
         if not os.path.exists(spirvheaders):
             os.symlink("../../../spirvheaders", spirvheaders)
-        kc_cts_dir = self._src_dir + "/external/kc-cts"
-        if not os.path.exists(kc_cts_dir):
-            os.mkdir(kc_cts_dir)
         # Note: for kc-cts, the entire repo is copied since there is at least
         # one relative #include in this project, which breaks when the repo is
         # symlinked.
-        kc_cts_src = os.path.join(self._src_dir, "../kc-cts")
-        kc_cts_dest = os.path.join(kc_cts_dir, "src")
-        if os.path.exists(kc_cts_dest):
-            shutil.rmtree(kc_cts_dest)
-        shutil.copytree(kc_cts_src, kc_cts_dest)
+        kc_cts_dir = self._src_dir + "/external/kc-cts"
+        if os.path.exists(kc_cts_dir):
+            shutil.rmtree(kc_cts_dir)
+        if self._suite == "gl":
+            kc_cts_dest = os.path.join(kc_cts_dir, "src")
+            if not os.path.exists(kc_cts_dir):
+                os.mkdir(kc_cts_dir)
+            kc_cts_src = os.path.join(self._src_dir, "../kc-cts")
+            shutil.copytree(kc_cts_src, kc_cts_dest)
         # change spirv-tools and glslang to use the commits specified
         # in the vulkancts sources
         sys.path = [os.path.abspath(os.path.normpath(s)) for s in sys.path]
@@ -977,12 +978,13 @@ class CtsBuilder(CMakeBuilder):
         sys.path.append(self._src_dir + "/external/")
         fetch_sources = importlib.import_module("fetch_sources", ".")
         packages = fetch_sources.PACKAGES
-        # kc-cts package uses a different fetch_sources:
-        try:
-            fetch_kc_cts_sources = importlib.import_module("fetch_kc_cts", ".")
-            packages += fetch_kc_cts_sources.PACKAGES
-        except ImportError:
-            fetch_kc_cts_sources = []
+        if self._suite == "gl":
+            # kc-cts package uses a different fetch_sources:
+            try:
+                fetch_kc_cts_sources = importlib.import_module("fetch_kc_cts", ".")
+                packages += fetch_kc_cts_sources.PACKAGES
+            except ImportError:
+                fetch_kc_cts_sources = []
 
         for package in packages:
             try:
