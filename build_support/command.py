@@ -85,6 +85,11 @@ def run_batch_command(commands, streamedOutput=True, noop=False, env = None,
     if not env:
         env = {}
 
+    # Make sure the command is a valid executable
+    assert is_exe(commands[0]) is not None, ("ERROR: Tried to run a command "
+                                             "that doesn't exist: "
+                                             "%s" % commands[0])
+
     # first command needs to have only \ path separators
     envStrs = [a[0]+"="+a[1] for a in env.items()]
     if not quiet:
@@ -173,4 +178,17 @@ def rmtree(in_path):
             shutil.rmtree(unicode_path, onerror=on_error)
         else:
             rmfile(unicode_path)
+
+
+def is_exe(cmd):
+    """
+    Return path to cmd if it is a valid executable
+    """
+    if os.path.exists(cmd) and os.access(cmd, os.X_OK):
+        return cmd
+    for dirname in os.environ['PATH'].split(':'):
+        path = os.path.join(dirname, cmd)
+        if os.path.exists(path) and os.access(path, os.X_OK):
+            return path
+    return None
 
