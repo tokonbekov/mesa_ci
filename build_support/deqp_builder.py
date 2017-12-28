@@ -547,6 +547,8 @@ class DeqpTester:
         completion_fh = {}  # maintained in the results object.
         completion_interval = 0
         completion_percentage = 0
+        max_crash_cnt = 300
+        crash_cnt = 0
 
         # invoke tests
         while True:
@@ -581,6 +583,7 @@ class DeqpTester:
                 proc.poll()
                 if proc.returncode is None:
                     continue
+                # At this point, the test has crashed
                 if not single_proc:
                     completion_fh[cpu].close()
                     del completion_fh[cpu]
@@ -612,6 +615,11 @@ class DeqpTester:
                     test_name = unfinished_tests.pop_front()
                     commands += ["-n", test_name]
                 else:
+                    crash_cnt += 1
+                    if crash_cnt >= max_crash_cnt:
+                        raise SystemExit("FATAL: %i tests have crashed, "
+                                         "aborting remaining tests"
+                                         % max_crash_cnt)
                     print "WARN: continuing test after crash"
                     with open(case_fn, "w") as fh:
                         unfinished_tests.write_caselist(fh)
