@@ -28,6 +28,7 @@
 import hashlib
 import json
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -188,6 +189,7 @@ class RepoSet:
         # fetch all the repos into _repo_dir
         for tag in repos:
             project = tag.tag
+            repo = None
             url = tag.attrib["repo"]
             if build_lab:
                 url = build_lab_git + project + "/origin"
@@ -201,6 +203,17 @@ class RepoSet:
             # prohibit double entry
             assert not self._repos.has_key(project)
             project_repo_dir = repo_dir + "/" + project
+ 
+            if os.path.exists(project_repo_dir):
+                try:
+                    repo = git.Repo(project_repo_dir)
+                except git.InvalidGitRepositoryError:
+                    # Something broke with the repo, so remove it and re-clone
+                    print("INFO: Repo path is not a valid git repo: %s. "
+                          "Attempting to repair... " % project_repo_dir)
+                    shutil.rmtree(project_repo_dir)
+                    clone = True
+
             if not os.path.exists(project_repo_dir) and clone:
                 os.makedirs(project_repo_dir)
                 success = False
@@ -218,10 +231,15 @@ class RepoSet:
                 if not success and not build_lab:
                     os.makedirs(project_repo_dir + "/do_not_use")
 
+            if not repo:
+                try:
+                    repo = git.Repo(project_repo_dir)
+                except git.InvalidGitRepositoryError:
+                    raise SystemError("FATAL: Unable to create repo: %s" % project_repo_dir)
+
             if os.path.exists(project_repo_dir + "/do_not_use"):
                 continue
 
-            repo = git.Repo(project_repo_dir)
             self._repos[project] = repo
             self._remotes[project] = {}
             self._branches[project] = branch
