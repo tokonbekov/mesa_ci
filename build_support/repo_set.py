@@ -204,6 +204,9 @@ class RepoSet:
             assert not self._repos.has_key(project)
             project_repo_dir = repo_dir + "/" + project
  
+            if os.path.exists(project_repo_dir + "/do_not_use"):
+                continue
+
             if os.path.exists(project_repo_dir):
                 try:
                     repo = git.Repo(project_repo_dir)
@@ -230,15 +233,13 @@ class RepoSet:
                         print "WARN: unable to clone repo: " + url
                 if not success and not build_lab:
                     os.makedirs(project_repo_dir + "/do_not_use")
+                    continue
 
             if not repo:
                 try:
                     repo = git.Repo(project_repo_dir)
                 except git.InvalidGitRepositoryError:
                     raise SystemError("FATAL: Unable to create repo: %s" % project_repo_dir)
-
-            if os.path.exists(project_repo_dir + "/do_not_use"):
-                continue
 
             self._repos[project] = repo
             self._remotes[project] = {}
