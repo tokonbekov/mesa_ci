@@ -645,6 +645,7 @@ class PiglitTester(object):
                "--exclude-tests", "vs-float-main-return",
 
                # fails intermittently
+               "--exclude-tests", "opengl 1_3.gl-1_3-texture-env",
                "--exclude-tests", "arb_shader_clock.execution.clock"]
 
         if os.path.exists(conf_file):
