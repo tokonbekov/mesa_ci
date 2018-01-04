@@ -253,6 +253,9 @@ class DeqpTrie:
                         # text content can be None
                         if a_text.text:
                             out_txt += a_text.text + "\n"
+                        if len(out_txt > 1000):
+                            out_txt += "WARN: verbose output limited to save memory."
+                            break
                     self._stdout[test] = out_txt
                 # get the test duration value
                 for number in t.findall("./Number"):
@@ -486,6 +489,9 @@ class DeqpTester:
             all_tests.write_caselist(fh, prefix="", shard=shardno,
                                      shard_count=shardcount)
 
+        # free memory associated with the Trie
+        all_tests = None
+
         shard_tests = DeqpTrie()
         shard_tests.add_txt("mesa-ci-caselist.txt")
         full_test_count = shard_tests.test_count()
@@ -541,6 +547,8 @@ class DeqpTester:
             proc.err_fh = err_fh
             procs[cpu] = proc
 
+        # free memory associated with the Trie
+        shard_tests = None
         results = DeqpTrie()
 
         completed_tests = 0 # for status only.  accurate count is
