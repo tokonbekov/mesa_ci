@@ -253,9 +253,6 @@ class DeqpTrie:
                         # text content can be None
                         if a_text.text:
                             out_txt += a_text.text + "\n"
-                        if len(out_txt > 1000):
-                            out_txt += "WARN: verbose output limited to save memory."
-                            break
                     self._stdout[test] = out_txt
                 # get the test duration value
                 for number in t.findall("./Number"):
