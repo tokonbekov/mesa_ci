@@ -79,7 +79,7 @@ def restart_service(service_name):
 
 def reload_service_files():
     # Call daemon-reload in case systemd .service file was changed
-    subprocess.cehck_call(["systemctl", "daemon-reload"],
+    subprocess.check_call(["systemctl", "daemon-reload"],
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE)
 
@@ -108,8 +108,10 @@ def main():
     mesa_jenkins_repo = git.Repo(pm.source_root())
     while True:
         spec_hash = util.file_checksum(spec_file)
-        poll_branches_hash = util.file_checksum(poll_branches_file)
-        fetch_mirrors_hash = util.file_checksum(fetch_mirrors_file)
+        if os.path.exists(poll_branches_file):
+            poll_branches_hash = util.file_checksum(poll_branches_file)
+        if os.path.exists(fetch_mirrors_file):
+            fetch_mirrors_hash = util.file_checksum(fetch_mirrors_file)
         try:
             mesa_jenkins_repo.git.pull("origin", BRANCH)
             mesa_jenkins_repo.git.checkout(BRANCH, force=True)
@@ -118,8 +120,10 @@ def main():
                             "work directory: %s" % pm.source_root())
 
         new_spec_hash = util.file_checksum(spec_file)
-        new_poll_branches_hash = util.file_checksum(poll_branches_file)
-        new_fetch_mirrors_hash = util.file_checksum(fetch_mirrors_file)
+        if os.path.exists(poll_branches_file):
+            new_poll_branches_hash = util.file_checksum(poll_branches_file)
+        if os.path.exists(fetch_mirrors_file):
+            new_fetch_mirrors_hash = util.file_checksum(fetch_mirrors_file)
 
         # Reload service files and restart services if any interesting files
         # have changed
@@ -134,8 +138,10 @@ def main():
             fetch_mirrors_hash = new_fetch_mirrors_hash
 
             reload_service_files()
-            restart_service("fetch_mirrors")
-            restart_service("poll_branches")
+            if os.path.exists(fetch_mirrors_file):
+                restart_service("fetch_mirrors")
+            if os.path.exists(poll_branches_file):
+                restart_service("poll_branches")
         time.sleep(30)
     return
 

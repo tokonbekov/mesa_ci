@@ -206,6 +206,8 @@ class RepoSet:
                                    ProjectMap().build_spec().find("build_master").attrib["hostname"] +
                                    ".local/git/")
 
+        # Validate any existing repos under repos_root and add them to
+        # this object
         repos = buildspec.find("repos")
         for tag in repos:
             project = tag.tag
@@ -330,7 +332,6 @@ class RepoSet:
                     c.set('fetch', '+refs/*:refs/remotes/*')
                 repo.git.config('--local', '--add', 'remote.origin.fetch',
                                 '+refs/heads/*:refs/remotes/origin/*')
-                            
             # Store repo, branch, and remote object(s)
             self._repos[repo_name] = repo
             self._branches[repo_name] = branch
@@ -387,6 +388,7 @@ class RepoSet:
             #           repo.working_tree_dir)
             #     run_batch_command(["rm", "-rf", repo.working_tree_dir])
             #     raise
+
             if os.name != "nt":
                 signal.signal(signal.SIGALRM, signal_handler)
             # Iterate through all remotes and fetch them
