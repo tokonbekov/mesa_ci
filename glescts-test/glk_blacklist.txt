@@ -1,5 +1,0 @@
-ES31-CTS.functional.synchronization.inter_call.without_memory_barrier.ssbo_atomic_counter_mixed_dispatch_100_calls_1k_invocations
-ES32-CTS.functional.synchronization.inter_call.without_memory_barrier.ssbo_atomic_counter_mixed_dispatch_100_calls_1k_invocations
-ES32-CTS.core.geometry_shader.api.fs_gs_draw_call
-ES32-CTS.functional.geometry_shading.layered.render_with_default_layer_2d_multisample_array
-ES31-CTS.core.sepshaderobjs.StateInteraction
