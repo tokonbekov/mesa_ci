@@ -1,4 +1,4 @@
-# Copyright (C) Intel Corp.  2014.  All Rights Reserved.
+# Copyright (C) Intel Corp.  2018.  All Rights Reserved.
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -23,6 +23,7 @@
 #  **********************************************************************/
 #  * Authors:
 #  *   Mark Janes <mark.a.janes@intel.com>
+#  *   Clayton Craft <clayton.a.craft@intel.com>
 #  **********************************************************************/
 
 import hashlib
@@ -41,6 +42,7 @@ from . import ProjectMap
 from . import Options
 from . import run_batch_command
 
+
 class _ProjectBranch:
     def __init__(self, projectName):
         # default to master branch
@@ -48,6 +50,7 @@ class _ProjectBranch:
         self.name = projectName
         self.sha = None
         self.trigger = False
+
 
 class BranchSpecification:
     """This class tracks a "branch set" in the build's git repositories
@@ -110,7 +113,7 @@ class BranchSpecification:
                 continue
             repo = self._repos.repo(branch.name)
             hexsha = repo.commit(branch.branch).hexsha
-            if  branch.sha != hexsha:
+            if branch.sha != hexsha:
                 return branch.name + "=" + repo.git.rev_parse(hexsha, short=True)
         return False
 
@@ -140,6 +143,7 @@ class TimeoutException(Exception):
     def __str__(self):
         return self._msg
 
+
 def is_build_lab():
     buildspec = ProjectMap().build_spec()
     master_host = buildspec.find("build_master").attrib["hostname"]
@@ -154,123 +158,163 @@ def is_build_lab():
         # error from ping: not in build lab
         return False
     return True
-    
-    
+
+
+class RepoNotCloned(Exception):
+    def __init__(self, repo):
+        Exception.__init__(self, "Repo should be cloned first: %s" % repo)
+
+
 class RepoSet:
     """this class represents the set of git repositories which are
     specified in the build_specification.xml file."""
-    def __init__(self, clone=False, cached_only=False):
+    def __init__(self, repos_root=None, use_cache=True, mirror=False):
+        """
+        Keyword arguments:
+        repos_root  -- Destination for git repositories (default is ./repos/)
+        use_cache   -- Cloning/fetching will happen from
+                       build_master (default True)
+        mirror      -- Pass --mirror when creating clones (default False)
+        """
         buildspec = ProjectMap().build_spec()
         self._repos = {}
-        # key is project, value is dictionary of remote name => remote object
+        # key is repo name, value is dictionary of remote name => remote object
         self._remotes = {}
-        # key is project, value is the default branch for the repo (usually master)
+        # key is repo name, value is the default branch for the repo
+        # (usually master)
         self._branches = {}
         if type(buildspec) == str or type(buildspec) == unicode:
             buildspec = et.parse(buildspec)
-        repo_dir = ProjectMap().source_root() + "/repos"
-        repos = buildspec.find("repos")
+        self._build_lab = is_build_lab()
+        self._master_host = buildspec.find("build_master").attrib["hostname"]
+        # systems not in build lab should not use cache (e.g. the system is an
+        # external developer system).
+        self._use_cache = use_cache and self._build_lab
+        self._mirror = mirror
 
-        build_lab = is_build_lab()
-        build_lab_git = "git://" + \
-                        ProjectMap().build_spec().find("build_master").attrib["hostname"] + \
-                        ".local/git/"
-        if os.name == "nt":
-            build_lab_git = "git://" + \
-                            ProjectMap().build_spec().find("build_master").attrib["host"] + \
-                            "/git/"
+        self._repos_root = ProjectMap().source_root() + "/repos/"
+        if repos_root:
+                self._repos_root = repos_root
+
+        if self._use_cache:
+            self._git_cache = ("git://" +
+                               ProjectMap().build_spec().find("build_master").attrib["hostname"] +
+                               ".local/git/")
+
+    def clone(self):
+        """ Clone all repos specified in build_specification.xml
+            Note: This method does *not* fetch remotes """
+        if not os.path.exists(self._repos_root):
+            os.makedirs(self._repos_root)
         attempts = 1
-        if build_lab:
+        if self._build_lab and self._use_cache:
             attempts = 10
-
+        # Parse buildspec in case there were changes since RepoSet
+        # was initialized
         buildspec = ProjectMap().build_spec()
-        master_host = buildspec.find("build_master").attrib["hostname"]
+        if type(buildspec) == str or type(buildspec) == unicode:
+            buildspec = et.parse(buildspec)
 
-        # fetch all the repos into _repo_dir
+        repos = buildspec.find("repos")
+        # clone all the repos into repos_root
         for tag in repos:
-            project = tag.tag
+            repo_name = tag.tag
+            repo_dir = self._repos_root + tag.tag
             repo = None
+            # Builders/testers should clone from master's cache,
+            # everything else will clone from upstream.
             url = tag.attrib["repo"]
-            if build_lab:
-                url = build_lab_git + project + "/origin"
+            if self._use_cache:
+                url = self._git_cache + repo_name
             branch = "origin/master"
-            if tag.attrib.has_key("branch"):
+            if "branch" in tag.attrib:
                 branch = tag.attrib["branch"]
-            if cached_only and master_host not in url:
-                print("Skipping non-cached remote")
-                continue
-
-            # prohibit double entry
-            assert not self._repos.has_key(project)
-            project_repo_dir = repo_dir + "/" + project
- 
-            if os.path.exists(project_repo_dir + "/do_not_use"):
-                continue
-
-            if os.path.exists(project_repo_dir):
+            # Try to use existing repo_dir if there is one. If it's invalid
+            # and not explicitly disabled, then remove it so that a re-clone
+            # can be attempted
+            if os.path.exists(repo_dir) and not os.path.exists(repo_dir +
+                                                               "/do_not_use"):
                 try:
-                    repo = git.Repo(project_repo_dir)
+                    repo = git.Repo(repo_dir)
                 except git.InvalidGitRepositoryError:
                     # Something broke with the repo, so remove it and re-clone
-                    print("INFO: Repo path is not a valid git repo: %s. "
-                          "Attempting to repair... " % project_repo_dir)
-                    shutil.rmtree(project_repo_dir)
-                    clone = True
-
-            if not os.path.exists(project_repo_dir) and clone:
-                os.makedirs(project_repo_dir)
+                    print("INFO: Repo path exists but is not a valid git "
+                          "repo: %s. Attempting to repair... " % repo_dir)
+                    shutil.rmtree(repo_dir)
+            # Clone any repos that do not exist on disk
+            if not os.path.exists(repo_dir):
                 success = False
-                for attempt in range(0,attempts):
+                for attempt in range(0, attempts):
                     if attempt > 0:
                         time.sleep(10)
                     try:
-                        print "attempting clone of " + url
-                        git.Repo.clone_from(url,
-                                            project_repo_dir)
+                        print("Attempting clone of %s" % url)
+                        git.Repo.clone_from(url, repo_dir,
+                                            mirror=self._mirror)
                         success = True
                         break
                     except:
-                        print "WARN: unable to clone repo: " + url
-                if not success and not build_lab:
-                    os.makedirs(project_repo_dir + "/do_not_use")
+                        print("WARN: unable to clone repo: %s\n"
+                              "Exception text: %s" % (url, sys.exc_info()[0]))
+                # If the repo is not clone-able, do_not_use is used to disable
+                # it from any future attempts to clone/fetch
+                if not success and not self._build_lab:
+                    os.makedirs(repo_dir + "/do_not_use")
                     continue
+            if os.path.exists(repo_dir + "/do_not_use"):
+                continue
+            try:
+                repo = git.Repo(repo_dir)
+            except git.InvalidGitRepositoryError:
+                if not self._build_lab:
+                    os.makedirs(repo_dir + "/do_not_use")
+                print("WARNING: Unable to clone repo: %s" % repo_name)
+            # Systems not using cache (e.g. cloning from an external remote
+            # should add all remotes to the repo.
+            if not self._use_cache:
+                for a_remote in tag.findall("remote"):
+                    remote_name = a_remote.attrib["name"]
+                    remote_repo = a_remote.attrib["repo"]
+                    if not remote_name or not remote_repo:
+                        continue
+                    remote = None
+                    try:
+                        remote = repo.remote(name=remote_name)
+                        # Remote does not exist, so add it
+                        # Note: remotes are added to the repo with the
+                        # following fetch refspec:
+                        #    +refs/heads/*:refs/<remote_name>/*
+                    except ValueError:
+                        remote = repo.create_remote(remote_name, remote_repo)
+                        with remote.config_writer as c:
+                            c.config.set_value('remote \"' + remote_name
+                                               + '\"', 'fetch',
+                                               '+refs/heads/*:refs/'
+                                               + remote_name + '/*')
+            else:
+                # For systems that will be fetching from build master's git
+                # cache, add the appropriate fetch refspec so that refs are
+                # mapped to refs/remotes/*
+                origin = repo.remote("origin")
+                assert origin is not None
+                with origin.config_writer as c:
+                    c.set('fetch', '+refs/*:refs/remotes/*')
 
-            if not repo:
-                try:
-                    repo = git.Repo(project_repo_dir)
-                except git.InvalidGitRepositoryError:
-                    raise SystemError("FATAL: Unable to create repo: %s" % project_repo_dir)
-
-            self._repos[project] = repo
-            self._remotes[project] = {}
-            self._branches[project] = branch
-
+            # Store repo, branch, and remote object(s)
+            self._repos[repo_name] = repo
+            self._branches[repo_name] = branch
+            self._remotes[repo_name] = {}
+            tag_remotes = [x.attrib["name"] for x in tag.findall("remote")]
             for remote in repo.remotes:
-                self._remotes[project][remote.name] = remote
-
-            for a_remote in tag.findall("remote"):
-                remote_name = a_remote.attrib["name"]
-                if not self._remotes[project].has_key(remote_name) and clone:
-                    url = a_remote.attrib["repo"]
-                    if build_lab:
-                        url = build_lab_git + project + "/" + remote_name
-                    for attempt in range(0,attempts):
-                        print "Adding remote: " + remote_name + " " + url
-                        success = False
-                        try:
-                            if attempt > 0:
-                                time.sleep(10)
-                            remote = repo.create_remote(remote_name, url)
-                            remote.fetch()
-                            success = True
-                            self._remotes[project][remote_name] = remote
-                            break
-                        except:
-                            print "WARN: remote not available: " + url
-                            repo.delete_remote(remote_name)
-                    if not success and not build_lab:
-                        # make a dummy remote, so it doesn't attempt to fetch later
-                        remote = repo.create_remote(remote_name, project_repo_dir)
+                self._remotes[repo_name][remote.name] = remote
+                # Clean out any remotes that are no longer in the buildspec
+                if remote.name == "origin":
+                    continue
+                if remote.name not in tag_remotes:
+                    print("Remote does not exist in buildspec anymore, "
+                          "deleting it: %s"
+                          % remote.name)
+                    repo.delete_remote(remote.name)
 
     def repo(self, project_name):
         return self._repos[project_name]
@@ -285,33 +329,41 @@ class RepoSet:
         if os.name != "nt":
             signal.alarm(secs)   # 5 minutes
 
-    def fetch(self, cached_only=False):
+    def fetch(self):
         def signal_handler(signum, frame):
             raise TimeoutException("Fetch timed out.")
 
         buildspec = ProjectMap().build_spec()
-        master_host = buildspec.find("build_master").attrib["hostname"]
-
-        for repo in self._repos.values():
-            garbage_collection_fail = repo.working_tree_dir + "/.git/gc.log"
-            if os.path.exists(garbage_collection_fail):
-                run_batch_command(["rm", "-f", garbage_collection_fail])
+        self._master_host = buildspec.find("build_master").attrib["hostname"]
+        buildspec_repos = buildspec.find("repos")
+        for tag in buildspec_repos:
+            repo_name = tag.tag
+            # Make sure the repo we're fetching has been cloned first:
+            if repo_name not in self._repos.keys():
+                raise RepoNotCloned(repo_name)
+            repo = self._repos[repo_name]
+            # Removing gc.log is relevant only for systems where the repo
+            # is not bare:
+            if repo.working_tree_dir:
+                garbage_collection_fail = (repo.working_tree_dir +
+                                           "/.git/gc.log")
+                if os.path.exists(garbage_collection_fail):
+                    run_batch_command(["rm", "-f", garbage_collection_fail])
             try:
                 repo.git.prune()
             except Exception as e:
-                print "ERROR: git repo is corrupt, removing: " + repo.working_tree_dir
+                print("ERROR: git repo is corrupt, removing: %s" %
+                      repo.working_tree_dir)
                 run_batch_command(["rm", "-rf", repo.working_tree_dir])
-                raise;
+                raise
             if os.name != "nt":
                 signal.signal(signal.SIGALRM, signal_handler)
+            # Iterate through all remotes and fetch them
             for remote in repo.remotes:
-                if cached_only and master_host not in remote.url:
-                    print("Skipping non-cached remote")
-                    continue
                 print "fetching " + remote.url
                 # 4 attempts
                 success = False
-                for _ in range(1,4):
+                for _ in range(1, 4):
                     try:
                         self.alarm(300)   # 5 minutes
                         remote.fetch()
@@ -319,23 +371,18 @@ class RepoSet:
                         success = True
                         break
                     except git.GitCommandError as e:
-                        print "error fetching: " + str(e)
-                        self.alarm(0)
-                        time.sleep(1)
+                        print("error fetching: %s" % str(e))
                     except AssertionError as e:
-                        print "assertion while fetching: " + str(e)
-                        self.alarm(0)
-                        time.sleep(1)
+                        print("assertion while fetching: %s" % str(e))
                     except TimeoutException as e:
-                        print str(e)
+                        print(str(e))
                     except Exception as e:
-                        print str(e)
+                        print(str(e))
+                    finally:
+                        self.alarm(0)
                         time.sleep(1)
                 if not success:
-                    print "Failed to fetch remote, ignoring: " + remote.url
-        # the fetch has left our repo objects in an inconsistent
-        # state.  We need to recreate them.
-        self.__init__()
+                    print("Failed to fetch remote, ignoring: %s" % remote)
 
     def branch_missing_revisions(self):
         """provides the revisions which are on master but are not on the
@@ -446,22 +493,24 @@ class RevisionSpecification:
         return self._revisions[project]
 
 class RepoStatus:
-    def __init__(self, buildspec=None, cached_only=False):
+    def __init__(self, buildspec=None, repos_root=None):
         if not buildspec:
             buildspec = ProjectMap().build_spec()
         if type(buildspec) == str or type(buildspec) == unicode:
             buildspec = et.parse(buildspec)
 
-        self._cached_only = cached_only
-
         # key is project, value is repo object
-        self._repos = RepoSet(cached_only=self._cached_only)
+        self._repos = RepoSet(repos_root=repos_root)
 
         # referencing the HEAD of an unfetched remote will fail.  This
         # happens the first time branches are polled
         # after. build_specification.xml has been updated to add a
         # remote.
-        self._repos.fetch(self._cached_only)
+        try:
+            self._repos.fetch()
+        except RepoNotCloned:
+            self._repos.clone()
+            sefl._repos.fetch()
 
         self._branches = []
 
@@ -478,7 +527,11 @@ class RepoStatus:
     def poll(self):
         """returns list of branches that should be triggered"""
         ret_dict = {}
-        self._repos.fetch(self._cached_only)
+        try:
+            self._repos.fetch()
+        except RepoNotCloned:
+            self._repos.clone()
+            self._repos.fetch()
         for branch in self._branches:
             trigger_commit = branch.needs_build()
             if trigger_commit:
@@ -493,7 +546,6 @@ class BuildSpecification:
         if type(buildspec) == str or type(buildspec) == unicode:
             buildspec = et.parse(buildspec)
 
-        self._buildspec = buildspec
         self._reposet = RepoSet()
         self._branch_specs = {}
 
