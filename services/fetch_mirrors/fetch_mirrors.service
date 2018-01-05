@@ -6,7 +6,8 @@ Wants=network-online.target
 [Service]
 Type=simple
 PIDFile=/var/run/fetch_mirrors.pid
-ExecStart=/var/lib/git/mesa_jenkins/services/fetch_mirrors/fetch_mirrors.py
+Environment=FETCH_MIRRORS_CACHE_DIR=/var/lib/git/
+ExecStart=/var/cache/mesa_jenkins/services/fetch_mirrors/fetch_mirrors.py
 Restart=on-failure
 
 [Install]

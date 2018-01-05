@@ -1,0 +1,11 @@
+[Unit]
+Description=Monitor for mesa_jenkins work directory
+
+[Service]
+Type=simple
+PIDFile=/var/run/mesa_jenkins_monitor.pid
+ExecStart=/var/cache/mesa_jenkins/services/mesa_jenkins_monitor/mesa_jenkins_monitor.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
