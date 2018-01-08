@@ -1,0 +1,18 @@
+{
+    "systems": {
+        "otc-gfxperf-sklgt4e-05.local": {"switch": 1, "outlet": 1},
+        "otc-gfxperf-bdwgt3e-01.local": {"switch": 1, "outlet": 2}
+    },
+    "switches": {
+        "1": {
+            "hostname": "192.168.1.250",
+            "userid": "admin",
+            "password": "1234"
+        },
+        "2": {
+            "hostname": "192.168.1.251",
+            "userid": "admin",
+            "password": "1234"
+        }
+    }
+}

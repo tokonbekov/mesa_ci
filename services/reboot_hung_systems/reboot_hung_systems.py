@@ -494,7 +494,11 @@ def ping(system):
 def main():
     # Load the config file, read all of the configuration data in and then
     # delete the reference to the conf file, it won't be needed again.
-    with open("/var/lib/git/mesa_jenkins/services/reboot_hung_systems/config.json", 'r') as f:
+    if "perf" in socket.gethostname():
+        config_json = "perf.json"
+    else:
+        config_json = "config.json"
+    with open("/var/lib/git/mesa_jenkins/services/reboot_hung_systems/" + config_json, 'r') as f:
         conf = json.load(f)
 
     systems = conf['systems']
