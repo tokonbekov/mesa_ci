@@ -3,7 +3,7 @@ Description=Control managed switches to reboot hung systems
 
 [Service]
 Type=simple
-ExecStart=/var/lib/git/mesa_jenkins/services/reboot_hung_systems/reboot_hung_systems.py
+ExecStart=/var/cache/mesa_jenkins/repos/mesa_ci/services/reboot_hung_systems/reboot_hung_systems.service
 Restart=on-failure
 
 [Install]
