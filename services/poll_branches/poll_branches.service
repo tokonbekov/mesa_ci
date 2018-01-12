@@ -4,7 +4,7 @@ Description=Poll git branches and start new Jenkins jobs
 [Service]
 Type=simple
 PIDFile=/var/run/poll_branches.pid
-ExecStart=/var/cache/mesa_jenkins/services/poll_branches/poll_branches.py
+ExecStart=/var/cache/mesa_jenkins/repos/mesa_ci/services/poll_branches/poll_branches.py
 Restart=on-failure
 
 [Install]
