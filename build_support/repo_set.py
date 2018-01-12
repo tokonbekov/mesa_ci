@@ -251,6 +251,9 @@ class RepoSet:
                         print("Attempting clone of %s" % url)
                         git.Repo.clone_from(url, repo_dir,
                                             mirror=self._mirror)
+                        if self._mirror:
+                            run_batch_command(['touch',
+                                               repo_dir + '/git-daemon-export-ok'])
                         success = True
                         break
                     except:
