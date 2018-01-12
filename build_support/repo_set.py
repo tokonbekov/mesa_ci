@@ -207,20 +207,19 @@ class RepoSet:
             if os.path.exists(project_repo_dir):
                 try:
                     repo = git.Repo(project_repo_dir)
+                    self._repos[project] = repo
+                    self._remotes[project] = {}
+                    for remote in repo.remotes:
+                        self._remotes[project][remote.name] = remote
+                    branch = "origin/master"
+                    if tag.attrib.has_key("branch"):
+                        branch = tag.attrib["branch"]
+                    self._branches[project] = branch
                 except git.InvalidGitRepositoryError:
                     # Something broke with the repo, so remove it and re-clone
                     print("INFO: Repo path is not a valid git repo: %s. Removing..."
                           % project_repo_dir)
                     shutil.rmtree(project_repo_dir)
-                    continue
-            self._repos[project] = repo
-            self._remotes[project] = {}
-            for remote in repo.remotes:
-                self._remotes[project][remote.name] = remote
-            branch = "origin/master"
-            if tag.attrib.has_key("branch"):
-                branch = tag.attrib["branch"]
-            self._branches[project] = branch
 
     def clone(self):
         """ Clone all repos specified in build_specification.xml
