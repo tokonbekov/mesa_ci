@@ -194,12 +194,33 @@ class RepoSet:
 
         self._repos_root = ProjectMap().source_root() + "/repos/"
         if repos_root:
-                self._repos_root = repos_root
+            self._repos_root = repos_root
 
         if self._use_cache:
             self._git_cache = ("git://" +
                                ProjectMap().build_spec().find("build_master").attrib["hostname"] +
                                ".local/git/")
+        repos = buildspec.find("repos")
+        for tag in repos:
+            project = tag.tag
+            project_repo_dir = self._repos_root + "/" + project
+            if os.path.exists(project_repo_dir):
+                try:
+                    repo = git.Repo(project_repo_dir)
+                except git.InvalidGitRepositoryError:
+                    # Something broke with the repo, so remove it and re-clone
+                    print("INFO: Repo path is not a valid git repo: %s. Removing..."
+                          % project_repo_dir)
+                    shutil.rmtree(project_repo_dir)
+                    continue
+            self._repos[project] = repo
+            self._remotes[project] = {}
+            for remote in repo.remotes:
+                self._remotes[project][remote.name] = remote
+            branch = "origin/master"
+            if tag.attrib.has_key("branch"):
+                branch = tag.attrib["branch"]
+            self._branches[project] = branch
 
     def clone(self):
         """ Clone all repos specified in build_specification.xml
