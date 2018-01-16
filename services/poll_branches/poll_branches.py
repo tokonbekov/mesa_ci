@@ -46,8 +46,8 @@ def main():
     spec = pm.build_spec()
     server = spec.find("build_master").attrib["host"]
 
+    status = bs.RepoStatus()
     while True:
-        status = bs.RepoStatus()
         branches = status.poll()
         sys.stderr.flush()
         sys.stdout.flush()
