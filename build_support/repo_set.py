@@ -372,13 +372,13 @@ class RepoSet:
                                            "/.git/gc.log")
                 if os.path.exists(garbage_collection_fail):
                     run_batch_command(["rm", "-f", garbage_collection_fail])
-            try:
-                repo.git.prune()
-            except Exception as e:
-                print("ERROR: git repo is corrupt, removing: %s" %
-                      repo.working_tree_dir)
-                run_batch_command(["rm", "-rf", repo.working_tree_dir])
-                raise
+            # try:
+            #     repo.git.prune()
+            # except Exception as e:
+            #     print("ERROR: git repo is corrupt, removing: %s" %
+            #           repo.working_tree_dir)
+            #     run_batch_command(["rm", "-rf", repo.working_tree_dir])
+            #     raise
             if os.name != "nt":
                 signal.signal(signal.SIGALRM, signal_handler)
             # Iterate through all remotes and fetch them
