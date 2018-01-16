@@ -78,7 +78,7 @@ def main():
                     time.sleep(10)
             os.environ["http_proxy"] = "http://proxy.jf.intel.com:911/"
 
-        time.sleep(30)
+        time.sleep(5)
 
 
 if __name__ == "__main__":
