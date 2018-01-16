@@ -535,7 +535,7 @@ class RepoStatus:
             self._repos.fetch()
         except RepoNotCloned:
             self._repos.clone()
-            sefl._repos.fetch()
+            self._repos.fetch()
 
         self._branches = []
 
