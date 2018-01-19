@@ -43,7 +43,7 @@ except IOError:
     # This can be removed after a couple of months when all pre-revisions.xml
     # builds are flushed from the history
     _revspec = bs.RevisionSpecification.from_cmd_line_param(
-        test_dir.split('/')[5].split('_'))
+        test_dir.split('/')[5].split('.'))
 _revspec.checkout()
 
 proj_rev = args.good_rev.split("=")

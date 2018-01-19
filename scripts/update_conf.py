@@ -32,7 +32,7 @@ if not os.path.exists(test_dir):
 
 dirnames = os.path.abspath(test_dir).split("/")
 hash_dir = dirnames[5]
-revs = hash_dir.split("_")
+revs = hash_dir.split(".")
 
 rev_hash = {}
 for a_rev in revs:

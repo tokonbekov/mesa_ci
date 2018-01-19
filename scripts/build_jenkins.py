@@ -242,7 +242,7 @@ def main():
     revspec = bs.RevisionSpecification()
     print "Building revision: " + revspec.to_cmd_line_param()
 
-    hashstr = revspec.to_cmd_line_param().replace(" ", "_")
+    hashstr = revspec.to_cmd_line_param().replace(" ", ".")
 
     # create a result_path that is unique for this set of builds
     spec_xml = pm.build_spec()
