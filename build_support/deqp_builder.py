@@ -625,10 +625,11 @@ class DeqpTester:
                 else:
                     crash_cnt += 1
                     if crash_cnt >= max_crash_cnt:
-                        raise SystemExit("FATAL: %i tests have crashed, "
-                                         "aborting remaining tests"
-                                         % max_crash_cnt)
-                    print "WARN: continuing test after crash"
+                        raise Exception("FATAL: %i tests have crashed "
+                                        "aborting remaining tests"
+                                        % max_crash_cnt)
+                    print("WARN: continuing test after the following "
+                          "test has crashed: %s" % test_name)
                     with open(case_fn, "w") as fh:
                         unfinished_tests.write_caselist(fh)
                     commands +=  ["--deqp-caselist-file=" + case_fn]
