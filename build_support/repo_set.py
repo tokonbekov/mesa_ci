@@ -488,8 +488,6 @@ class RevisionSpecification:
         for (project, rev) in self._revisions.iteritems():
             if project == "mesa_jenkins":
                 continue
-            if project == "mesa_ci":
-                continue
             if project == "prerelease":
                 continue
             if project == "gmock":
