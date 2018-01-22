@@ -18,14 +18,14 @@ import urllib2
 # append services directory to pythonpath, so we can make use of
 # Daemon.  Second line is for finding Daemon when running from the
 # checkout, and not when runnning as a service.
-sys.path.append("/var/lib/git/mesa_jenkins/services/")
+sys.path.append("/var/cache/mesa_jenkins/repos/mesa_ci/services/")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), ".."))
 import util
 
 # append build_support directory to pythonpath, so we can make use of
 # RepoSet etc.  Second line is for finding build_support when running
 # from the checkout, and not when runnning as a service.
-sys.path.append("/var/lib/git/mesa_jenkins/")
+sys.path.append("/var/cache/mesa_jenkins/repos/mesa_ci")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "../.."))
 import build_support as bs
 

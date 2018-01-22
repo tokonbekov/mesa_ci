@@ -6,11 +6,11 @@ import signal
 import sys
 import time
 
-sys.path.append("/var/cache/mesa_jenkins/services/")
+sys.path.append("/var/cache/mesa_jenkins/repos/mesa_ci/services/")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), ".."))
 import util
 
-sys.path.append("/var/cache/mesa_jenkins/")
+sys.path.append("/var/cache/mesa_jenkins/repos/mesa_ci")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "../.."))
 import build_support as bs
 

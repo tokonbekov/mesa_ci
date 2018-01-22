@@ -474,7 +474,7 @@ class PowerSwitch(object):
         return result
 
 
-sys.path.append("/var/lib/git/mesa_jenkins/services/")
+sys.path.append("/var/cache/mesa_jenkins/repos/mesa_ci")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), ".."))
 import subprocess
 
@@ -494,11 +494,8 @@ def ping(system):
 def main():
     # Load the config file, read all of the configuration data in and then
     # delete the reference to the conf file, it won't be needed again.
-    if "perf" in socket.gethostname():
-        config_json = "perf.json"
-    else:
-        config_json = "config.json"
-    with open("/var/lib/git/mesa_jenkins/services/reboot_hung_systems/" + config_json, 'r') as f:
+    with open("/var/cache/mesa_jenkins/reboot_hung_systems_config.json",
+              'r') as f:
         conf = json.load(f)
 
     systems = conf['systems']
