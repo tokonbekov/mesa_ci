@@ -106,6 +106,8 @@ def main():
     new_fetch_mirrors_hash = None
 
     mesa_jenkins_repo = git.Repo(pm.source_root())
+    mesa_ci_repo = git.Repo(os.path.join(pm.source_root(),
+                                         "repos/mesa_ci"))
     while True:
         spec_hash = util.file_checksum(spec_file)
         if os.path.exists(poll_branches_file):
@@ -115,6 +117,7 @@ def main():
         try:
             mesa_jenkins_repo.git.pull("origin", BRANCH)
             mesa_jenkins_repo.git.checkout(BRANCH, force=True)
+            mesa_ci_repo.checkout(BRANCH, force=True)
         except git.GitCommandError:
             raise Exception("FATAL: Unable to update mesa_jenkins "
                             "work directory: %s" % pm.source_root())
