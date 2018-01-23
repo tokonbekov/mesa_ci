@@ -43,11 +43,11 @@ import subprocess
 import sys
 import time
 
-sys.path.append("/var/cache/mesa_jenkins/services/")
+sys.path.append("/var/cache/mesa_jenkins/repos/mesa_ci/services/")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), ".."))
 import util
 
-sys.path.append("/var/cache/mesa_jenkins/")
+sys.path.append("/var/cache/mesa_jenkins/repos/mesa_ci/")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "../.."))
 import build_support as bs
 
@@ -96,10 +96,10 @@ def main():
     # Locations of files that trigger service restarts:
     spec_file = os.path.join(pm.source_root(), "build_specification.xml")
     poll_branches_file = os.path.join(pm.source_root(),
-                                      "services/poll_branches"
-                                      "/poll_branches.py")
+                                      "repos/mesa_ci/services/poll_branches",
+                                      "poll_branches.py")
     fetch_mirrors_file = os.path.join(pm.source_root(),
-                                      "services/fetch_mirrors/"
+                                      "repos/mesa_ci/services/fetch_mirrors",
                                       "fetch_mirrors.py")
     new_spec_hash = None
     new_poll_branches_hash = None
