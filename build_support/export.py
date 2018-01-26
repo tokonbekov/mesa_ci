@@ -176,7 +176,7 @@ class Export:
 
         # create a copy of the test xml in the source root, where
         # jenkins can access it.
-        cmd = ["cp", "-a", "-n",
+        cmd = ["cp", "-a",
                pm.build_root() + "/../test", pm.source_root()]
         run_batch_command(cmd)
         
